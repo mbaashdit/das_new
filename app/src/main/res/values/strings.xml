@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">DAS</string>
+
+    <string name="internal_storage">internal_storage</string>
+    <string name="search">Search...</string>
+</resources>

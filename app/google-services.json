@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "316956948704",
+    "project_id": "das-android-4f282",
+    "storage_bucket": "das-android-4f282.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:316956948704:android:3055a35b1b33ab301c7885",
+        "android_client_info": {
+          "package_name": "com.aashdit.distautosystem"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "316956948704-2fa958dr44t9lib3if7qleoe3ghl3hic.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABCOyA6Zq-eM3kZM72CNTousvHrzM_HoY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "316956948704-2fa958dr44t9lib3if7qleoe3ghl3hic.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
