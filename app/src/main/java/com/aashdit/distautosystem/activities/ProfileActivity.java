@@ -74,7 +74,8 @@ public class ProfileActivity extends AppCompatActivity {
         binding.cvPwdChange.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showLogoutDialog();
+                Intent cpIntent = new Intent(ProfileActivity.this, ChangePasswordActivity.class);
+                startActivity(cpIntent);
             }
         });
 

@@ -1,6 +1,9 @@
 package com.aashdit.distautosystem.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
@@ -8,9 +11,13 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.aashdit.distautosystem.R;
+import com.aashdit.distautosystem.adapters.PhotoNotUploadAdapter;
 import com.aashdit.distautosystem.databinding.ActivityDashboardBinding;
+import com.aashdit.distautosystem.model.NotUploaded;
+import com.rm.rmswitch.RMSwitch;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -22,6 +29,9 @@ public class DashboardActivity extends AppCompatActivity {
 
     private ActivityDashboardBinding binding;
     private String startdate = "", enddate = "";
+
+    private ArrayList<NotUploaded> notUploadedData = new ArrayList<>();
+    private PhotoNotUploadAdapter notUploadedAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,9 +47,31 @@ public class DashboardActivity extends AppCompatActivity {
             }
         });
         setDafaultDateFormat();
+        notUploadedAdapter = new PhotoNotUploadAdapter(this,notUploadedData);
+        binding.rvProjectList.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL,false));
+        binding.rvProjectList.setAdapter(notUploadedAdapter);
 
         binding.ivFromCalender.setOnClickListener(view12 -> setDateTimeField());
         binding.ivToCalender.setOnClickListener(view1 -> setTodayDateTimeField());
+
+        binding.uploadSwitch.addSwitchObserver(new RMSwitch.RMSwitchObserver() {
+            @Override
+            public void onCheckStateChange(RMSwitch switchView, boolean isChecked) {
+                if (isChecked) {
+
+                }else{
+                    binding.rvProjectList.setAdapter(notUploadedAdapter);
+                }
+            }
+        });
+
+        binding.swiperefreshlayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                binding.swiperefreshlayout.setRefreshing(false);
+            }
+        });
+
     }
     private void setTodayDateTimeField() {
         final Calendar c = Calendar.getInstance();
