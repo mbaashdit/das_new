@@ -124,6 +124,7 @@ public class GeoTaggingActivity extends AppCompatActivity implements LocationLis
             requestCameraPermission();
         }
 
+        binding.animationView.setVisibility(View.GONE);
         binding.progress.setVisibility(View.GONE);
         getGeoTagDetailsByProjectIdAndStageId();
         getLocation();
@@ -156,9 +157,11 @@ public class GeoTaggingActivity extends AppCompatActivity implements LocationLis
 //        }
 
         if (App.longitude == 0.0 || App.latitude == 0.0) {
-            binding.progress.setVisibility(View.VISIBLE);
+            binding.animationView.setVisibility(View.VISIBLE);
+//            binding.progress.setVisibility(View.VISIBLE);
         } else {
-            binding.progress.setVisibility(View.GONE);
+            binding.animationView.setVisibility(View.GONE);
+//            binding.progress.setVisibility(View.GONE);
         }
         if (tagData.size() < 2) {
             binding.ivGeoTagged.setEnabled(true);
@@ -181,7 +184,8 @@ public class GeoTaggingActivity extends AppCompatActivity implements LocationLis
                         }
                     } else {
                         Toast.makeText(GeoTaggingActivity.this, "Fetching Location, Please wait.", Toast.LENGTH_LONG).show();
-                        binding.progress.setVisibility(View.VISIBLE);
+                        binding.animationView.setVisibility(View.VISIBLE);
+//                        binding.progress.setVisibility(View.VISIBLE);
                     }
                 } else {
                     binding.ivGeoTagged.setEnabled(false);
@@ -249,7 +253,8 @@ public class GeoTaggingActivity extends AppCompatActivity implements LocationLis
     }
 
     private void getGeoTagDetailsByProjectIdAndStageId() {
-        binding.progress.setVisibility(View.VISIBLE);
+        binding.animationView.setVisibility(View.VISIBLE);
+//        binding.progress.setVisibility(View.VISIBLE);
         AndroidNetworking.get(BuildConfig.BASE_URL.concat("api/awc/anganwadiConstruction/getGeoTagDetailsByProjectIdAndStageId" +
                 "?projectId=" + projectId + "&stageId=" + stageId))
                 .setTag("stopWorkPlan")
@@ -258,7 +263,8 @@ public class GeoTaggingActivity extends AppCompatActivity implements LocationLis
                 .getAsString(new StringRequestListener() {
                     @Override
                     public void onResponse(String response) {
-                        binding.progress.setVisibility(View.GONE);
+                        binding.animationView.setVisibility(View.GONE);
+//                        binding.progress.setVisibility(View.GONE);
                         if (Utility.isStringValid(response)) {
                             try {
                                 JSONObject resObj = new JSONObject(response);
@@ -327,7 +333,9 @@ public class GeoTaggingActivity extends AppCompatActivity implements LocationLis
 
                     @Override
                     public void onError(ANError anError) {
-                        binding.progress.setVisibility(View.GONE);
+                        Log.e(TAG, "onError: "+anError.getErrorDetail() );
+                        binding.animationView.setVisibility(View.GONE);
+//                        binding.progress.setVisibility(View.GONE);
                     }
                 });
     }
@@ -389,7 +397,8 @@ public class GeoTaggingActivity extends AppCompatActivity implements LocationLis
     //              "projectId="+projectId+"&imagePath="+path+"&latitude="+latitude+"&longitude="+longitude+"&address="+capturedAddress
     private void captureGeoTagImage(File path) {
 
-        binding.progress.setVisibility(View.VISIBLE);
+        binding.animationView.setVisibility(View.VISIBLE);
+//        binding.progress.setVisibility(View.VISIBLE);
         AndroidNetworking.upload(BuildConfig.BASE_URL.concat("api/awc/anganwadiConstruction/captureGeoTagImage"))
                 .addMultipartFile("imagePath", path)
                 .addMultipartParameter("projectId", String.valueOf(projectId))
@@ -403,7 +412,8 @@ public class GeoTaggingActivity extends AppCompatActivity implements LocationLis
                 .getAsString(new StringRequestListener() {
                     @Override
                     public void onResponse(String response) {
-                        binding.progress.setVisibility(View.GONE);
+                        binding.animationView.setVisibility(View.GONE);
+//                        binding.progress.setVisibility(View.GONE);
                         try {
                             JSONObject resObj = new JSONObject(response);
                             if (resObj.optString("flag").equals("Success")) {
@@ -417,7 +427,8 @@ public class GeoTaggingActivity extends AppCompatActivity implements LocationLis
 
                     @Override
                     public void onError(ANError anError) {
-                        binding.progress.setVisibility(View.GONE);
+//                        binding.progress.setVisibility(View.GONE);
+                        binding.animationView.setVisibility(View.GONE);
                         Log.e(TAG, "onError: " + anError.getErrorDetail());
                     }
                 });
@@ -511,7 +522,8 @@ public class GeoTaggingActivity extends AppCompatActivity implements LocationLis
         Log.d("Tag", "LatLng===>" + location.getLatitude() + " " + location.getLongitude());
 
         if (location.getLatitude() != 0.0 && location.getLongitude() != 0.0) {
-            binding.progress.setVisibility(View.GONE);
+            binding.animationView.setVisibility(View.GONE);
+//            binding.progress.setVisibility(View.GONE);
             App.latitude = location.getLatitude();
             App.longitude = location.getLongitude();
 
@@ -533,7 +545,8 @@ public class GeoTaggingActivity extends AppCompatActivity implements LocationLis
 
         } else {
             Toast.makeText(this, "Fetching Location, Please wait.", Toast.LENGTH_LONG).show();
-            binding.progress.setVisibility(View.VISIBLE);
+            binding.animationView.setVisibility(View.VISIBLE);
+//            binding.progress.setVisibility(View.VISIBLE);
         }
     }
 

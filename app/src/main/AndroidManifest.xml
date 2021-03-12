@@ -26,7 +26,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activities.GeoTaggingActivity"></activity>
+        <activity android:name=".activities.ImageUploadActivity"></activity>
+        <activity android:name=".activities.GeoTaggingActivity" />
         <activity android:name=".activities.ProjectDetailsActivity" />
         <activity android:name=".activities.ChangePasswordActivity" />
         <activity android:name=".activities.ProfileActivity" />

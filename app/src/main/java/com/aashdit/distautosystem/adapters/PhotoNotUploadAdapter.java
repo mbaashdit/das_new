@@ -42,7 +42,18 @@ public class PhotoNotUploadAdapter extends RecyclerView.Adapter<PhotoNotUploadAd
     @Override
     public void onBindViewHolder(PhotoNotUploadedHolder holder, int position) {
         //getting the product of the specified position
-//        NotUploaded photoDTO1 = photosList.get(position);
+        NotUploaded item = photosList.get(position);
+        holder.mTvProjectName.setText("Project Name : "+item.projectName);
+        holder.mTvProjectName.setSelected(true);
+        holder.mTvAgencyName.setText("Agency Name : "+item.agencyName);
+
+        holder.mIvUpload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                notUploadedListener.notUploaded(item);
+            }
+        });
+
 
         //binding the data with the viewholder views
 
@@ -56,9 +67,9 @@ public class PhotoNotUploadAdapter extends RecyclerView.Adapter<PhotoNotUploadAd
 //        holder.tendertimeline.setText(photoDTO1.getTimeLine());
 //        holder.tenderprojectid.setText(photoDTO1.getProjectId());
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+//        holder.itemView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
 //                resultResponse photoDTO1 = photosList.get(position);
 //                String tenderid=photoDTO1.getTenderId()+"";
 //                RegPrefManager.getInstance(mCtx).setInitialTenderId(tenderid);
@@ -67,8 +78,8 @@ public class PhotoNotUploadAdapter extends RecyclerView.Adapter<PhotoNotUploadAd
 //                Intent intent =new Intent(mCtx, InitiationPhotoUploadActivity.class);
 //                intent.putExtra("TENDER_ID",tenderid);
 //                mCtx.startActivity(intent);
-            }
-        });
+//            }
+//        });
 //        holder.uploadbtn.setVisibility(View.GONE);
 //        holder.uploadbtn.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -98,7 +109,7 @@ public class PhotoNotUploadAdapter extends RecyclerView.Adapter<PhotoNotUploadAd
 
     @Override
     public int getItemCount() {
-        return 5/*photosList.size()*/;
+        return photosList.size();
     }
 
     class PhotoNotUploadedHolder extends RecyclerView.ViewHolder {
