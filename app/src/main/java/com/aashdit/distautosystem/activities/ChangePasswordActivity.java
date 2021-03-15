@@ -1,11 +1,7 @@
 package com.aashdit.distautosystem.activities;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -14,8 +10,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.aashdit.distautosystem.BuildConfig;
-import com.aashdit.distautosystem.R;
 import com.aashdit.distautosystem.databinding.ActivityChangePasswordBinding;
 import com.aashdit.distautosystem.util.Constants;
 import com.aashdit.distautosystem.util.SharedPrefManager;
@@ -35,12 +33,12 @@ public class ChangePasswordActivity extends AppCompatActivity {
     private ActivityChangePasswordBinding binding;
     ProgressDialog progressDialog;
     SharedPrefManager sp;
-    private String userid,oldPassword,newPassword;
+    private String userid, oldPassword, newPassword, retypeNewPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding  = ActivityChangePasswordBinding.inflate(getLayoutInflater());
+        binding = ActivityChangePasswordBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);
@@ -60,12 +58,17 @@ public class ChangePasswordActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 newPassword = binding.etNewPassword.getText().toString().trim();
+                retypeNewPassword = binding.etReNewPassword.getText().toString().trim();
                 oldPassword = binding.etOldPassword.getText().toString().trim();
 
                 if (oldPassword.equals("")) {
                     toastMessage("Please Enter Old Password");
                 } else if (newPassword.equals("")) {
                     toastMessage("Please Enter New Password");
+                } else if (retypeNewPassword.equals("")) {
+                    toastMessage("Please Re Type New Password");
+                } else if (!retypeNewPassword.equals(newPassword)) {
+                    toastMessage("Invalid New Password");
                 } else {
                     if (isNetworkAvailable()) {
                         changePassword();
@@ -84,7 +87,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
         progressDialog.setMessage("Loading...");
         progressDialog.setCancelable(false);
 
-        AndroidNetworking.post(BuildConfig.BASE_URL.concat("api/changePassword?oldPassword="+oldPassword+"&newPassword="+newPassword))
+        AndroidNetworking.post(BuildConfig.BASE_URL.concat("api/changePassword?userId="+userid+"&oldPassword="+oldPassword+"&newPassword="+newPassword))
                 .setTag("ChangePassword")
                 .setPriority(Priority.HIGH)
                 .build()

@@ -165,6 +165,8 @@ public class LoginActivity extends AppCompatActivity {
 
                                         finish();
                                     }
+                                }else{
+                                    toastMessage(loginObj.optString("message"));
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();
