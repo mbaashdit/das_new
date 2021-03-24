@@ -37,7 +37,7 @@ android {
             dimension "das"
 //            applicationIdSuffix ".demo"
             buildConfigField("String","FLAVOUR_TYPE","\"DEMO\"")
-            buildConfigField("String", "BASE_URL", "\"http://209.97.136.18:8080/dist_auto_system/\"")
+            buildConfigField("String", "BASE_URL", "\"http://192.168.3.160:4576/das-web/\"")
         }
         jajpur {
             dimension "das"

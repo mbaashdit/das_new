@@ -17,6 +17,7 @@
 
 
         <androidx.cardview.widget.CardView
+            android:visibility="gone"
             android:id="@+id/cv_map"
             android:layout_width="60dp"
             android:layout_height="60dp"
@@ -74,10 +75,18 @@
 
             <views.MonSemiBold
                 android:textColor="@color/white"
-                android:id="@+id/tv_uc_date"
+                android:id="@+id/tv_release_amount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Last UC Submition date : " />
+                android:text="ReleaseAmount  : " />
+
+
+            <views.MonSemiBold
+                android:textColor="@color/white"
+                android:id="@+id/tv_release_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ReleaseDate  : " />
 
 
         </LinearLayout>

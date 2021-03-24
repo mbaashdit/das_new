@@ -3,13 +3,19 @@ package com.aashdit.distautosystem.activities;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.graphics.Color;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationListener;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.DatePicker;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,6 +24,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.aashdit.distautosystem.BuildConfig;
 import com.aashdit.distautosystem.adapters.PhotoNotUploadAdapter;
 import com.aashdit.distautosystem.adapters.PhotoUploadAdapter;
+import com.aashdit.distautosystem.app.App;
 import com.aashdit.distautosystem.databinding.ActivityDashboardBinding;
 import com.aashdit.distautosystem.model.NotUploaded;
 import com.aashdit.distautosystem.model.Uploaded;
@@ -38,10 +45,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-public class DashboardActivity extends AppCompatActivity implements PhotoNotUploadAdapter.NotUploadedListener {
+public class DashboardActivity extends AppCompatActivity implements PhotoNotUploadAdapter.NotUploadedListener ,
+        LocationListener {
 
     private static final String TAG = "DashboardActivity";
 
@@ -79,7 +88,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
         setDafaultDateFormat();
         binding.animationView.setVisibility(View.GONE);
         binding.progressbar.setVisibility(View.GONE);
-        getTendersForInspection();
+        getFundReleaseListForGeoTagging();
 //        getInitialUploadedTenders();
         notUploadedAdapter = new PhotoNotUploadAdapter(this, notUploadedData);
         notUploadedAdapter.setNotUploadedListener(this);
@@ -102,7 +111,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                 }else {
                     binding.tvNotUpload.setTextColor(Color.parseColor("#364F6B"));
                     binding.tvUpload.setTextColor(Color.parseColor("#8A364F6B"));
-                    getTendersForInspection();
+                    getFundReleaseListForGeoTagging();
                     binding.rvProjectList.setAdapter(notUploadedAdapter);
                 }
             }
@@ -115,7 +124,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                 if (isUploaded) {
                     getInitialUploadedTenders();
                 } else {
-                    getTendersForInspection();
+                    getFundReleaseListForGeoTagging();
                 }
             }
         });
@@ -168,10 +177,10 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                 });
     }
 
-    private void getTendersForInspection() {
+    private void getFundReleaseListForGeoTagging() {
         binding.animationView.setVisibility(View.VISIBLE);
 //        binding.progressbar.setVisibility(View.VISIBLE);
-        AndroidNetworking.post(BuildConfig.BASE_URL.concat("api/getTendersForInspection?userId=" + userId +
+        AndroidNetworking.get(BuildConfig.BASE_URL.concat("api/getFundReleaseListForGeoTagging?userId=" + userId +
                 "&startDate=" + startdate + "&endDate=" + enddate))
                 .setTag("Login")
                 .setPriority(Priority.HIGH)
@@ -185,9 +194,9 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                             JSONObject resObj = null;
                             try {
                                 resObj = new JSONObject(response);
-                                String status = resObj.optString("status");
-                                if (status.equals("SUCCESS")) {
-                                    JSONArray resArray = resObj.optJSONArray("result");
+                                String status = resObj.optString("flag");
+                                if (status.equals("Success")) {
+                                    JSONArray resArray = resObj.optJSONArray("fundReleaseList");
                                     if (resArray != null && resArray.length() > 0) {
                                         notUploadedData.clear();
                                         for (int i = 0; i < resArray.length(); i++) {
@@ -231,7 +240,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                     if (isUploaded) {
                         getInitialUploadedTenders();
                     } else {
-                        getTendersForInspection();
+                        getFundReleaseListForGeoTagging();
                     }
                 }, mYear, mMonth, mDay);
         datePickerDialog.getDatePicker().setMaxDate(System.currentTimeMillis());
@@ -255,7 +264,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                         if (isUploaded) {
                             getInitialUploadedTenders();
                         } else {
-                            getTendersForInspection();
+                            getFundReleaseListForGeoTagging();
                         }
 //                    checkForApiCall();
                     }
@@ -289,10 +298,66 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
     }
 
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+//        if (requestCode == 1 && resultCode == RESULT_OK && data != null) {
+//            boolean isUploaded = data.getBooleanExtra("data",false);
+//            if (isUploaded){
+//                getIntiationTenderRecord();
+//            }else{
+//                Toast.makeText(this, isUploaded+"", Toast.LENGTH_SHORT).show();
+//            }
+//        }
+    }
 
     @Override
     public void notUploaded(NotUploaded item) {
         Intent uploadIntent = new Intent(DashboardActivity.this, ImageUploadActivity.class);
         startActivity(uploadIntent);
+    }
+
+    @Override
+    public void onLocationChanged(@NonNull Location location) {
+        Log.d("Tag", "LatLng===>" + location.getLatitude() + " " + location.getLongitude());
+
+        if (location.getLatitude() != 0.0 && location.getLongitude() != 0.0) {
+            binding.animationView.setVisibility(View.GONE);
+//            binding.progress.setVisibility(View.GONE);
+            App.latitude = location.getLatitude();
+            App.longitude = location.getLongitude();
+
+            Geocoder gc = new Geocoder(this, Locale.getDefault());
+            try {
+                List<Address> addresses = gc.getFromLocation(App.latitude, App.longitude, 1);
+                StringBuilder sb = new StringBuilder();
+                if (addresses.size() > 0) {
+                    Address address = addresses.get(0);
+                    for (int i = 0; i < address.getMaxAddressLineIndex(); i++) {
+                        sb.append(address.getAddressLine(i)).append("\n");
+                    }
+                    if (address.getAddressLine(0) != null)
+                        App.capturedAddress = address.getAddressLine(0);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        } else {
+            Toast.makeText(this, "Fetching Location, Please wait.", Toast.LENGTH_LONG).show();
+            binding.animationView.setVisibility(View.VISIBLE);
+//            binding.progress.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void onProviderEnabled(@NonNull String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(@NonNull String provider) {
+
     }
 }

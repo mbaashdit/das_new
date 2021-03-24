@@ -46,6 +46,8 @@ public class PhotoNotUploadAdapter extends RecyclerView.Adapter<PhotoNotUploadAd
         holder.mTvProjectName.setText("Project Name : "+item.projectName);
         holder.mTvProjectName.setSelected(true);
         holder.mTvAgencyName.setText("Agency Name : "+item.agencyName);
+        holder.mTvReleaseDate.setText("Released Date : "+item.releaseDate);
+        holder.mTvReleaseAmount.setText("Released Amount : "+item.releaseAmount);
 
         holder.mIvUpload.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,7 +116,7 @@ public class PhotoNotUploadAdapter extends RecyclerView.Adapter<PhotoNotUploadAd
 
     class PhotoNotUploadedHolder extends RecyclerView.ViewHolder {
 
-        TextView mTvAgencyName,mTvProjectName,mTvUCSubmitionDate;
+        TextView mTvAgencyName,mTvProjectName,mTvReleaseDate,mTvReleaseAmount;
         ImageView mIvUpload;
        // CardView addressCardView;
 
@@ -123,7 +125,8 @@ public class PhotoNotUploadAdapter extends RecyclerView.Adapter<PhotoNotUploadAd
 
             mTvAgencyName = itemView.findViewById(R.id.tv_agency_name);
             mTvProjectName= itemView.findViewById(R.id.tv_project_name);
-            mTvUCSubmitionDate= itemView.findViewById(R.id.tv_uc_date);
+            mTvReleaseDate= itemView.findViewById(R.id.tv_release_date);
+            mTvReleaseAmount= itemView.findViewById(R.id.tv_release_amount);
 
 
             mIvUpload = itemView.findViewById(R.id.img_upload);
