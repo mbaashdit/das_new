@@ -106,7 +106,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                 if (isChecked) {
                     binding.tvUpload.setTextColor(Color.parseColor("#364F6B"));
                     binding.tvNotUpload.setTextColor(Color.parseColor("#8A364F6B"));
-                    getInitialUploadedTenders();
+                    getGeoTaggedFundReleaseList();
                     binding.rvProjectList.setAdapter(uploadedAdapter);
                 }else {
                     binding.tvNotUpload.setTextColor(Color.parseColor("#364F6B"));
@@ -122,7 +122,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
             public void onRefresh() {
                 binding.swiperefreshlayout.setRefreshing(false);
                 if (isUploaded) {
-                    getInitialUploadedTenders();
+                    getGeoTaggedFundReleaseList();
                 } else {
                     getFundReleaseListForGeoTagging();
                 }
@@ -131,10 +131,9 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
 
     }
 
-    private void getInitialUploadedTenders() {
+    private void getGeoTaggedFundReleaseList() {
         binding.animationView.setVisibility(View.VISIBLE);
-//        binding.progressbar.setVisibility(View.VISIBLE);
-        AndroidNetworking.post(BuildConfig.BASE_URL.concat("api/getInitialUploadedTenders?userId=" + userId +
+        AndroidNetworking.get(BuildConfig.BASE_URL.concat("api/getGeoTaggedFundReleaseList?userId=" + userId +
                 "&startDate=" + startdate + "&endDate=" + enddate))
                 .setTag("Login")
                 .setPriority(Priority.HIGH)
@@ -143,15 +142,14 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                     @Override
                     public void onResponse(String response) {
                         binding.animationView.setVisibility(View.GONE);
-//                        binding.progressbar.setVisibility(View.GONE);
                         if (Utility.isStringValid(response)) {
 
                             JSONObject resObj = null;
                             try {
                                 resObj = new JSONObject(response);
-                                String status = resObj.optString("status");
-                                if (status.equals("SUCCESS")) {
-                                    JSONArray resArray = resObj.optJSONArray("result");
+                                String status = resObj.optString("flag");
+                                if (status.equals("Success")) {
+                                    JSONArray resArray = resObj.optJSONArray("fundReleaseList");
                                     if (resArray != null && resArray.length() > 0) {
                                         uploadedData.clear();
                                         for (int i = 0; i < resArray.length(); i++) {
@@ -171,7 +169,6 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                     @Override
                     public void onError(ANError anError) {
                         binding.animationView.setVisibility(View.GONE);
-//                        binding.progressbar.setVisibility(View.GONE);
                         Log.e(TAG, "onError: " + anError.getErrorDetail());
                     }
                 });
@@ -179,7 +176,6 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
 
     private void getFundReleaseListForGeoTagging() {
         binding.animationView.setVisibility(View.VISIBLE);
-//        binding.progressbar.setVisibility(View.VISIBLE);
         AndroidNetworking.get(BuildConfig.BASE_URL.concat("api/getFundReleaseListForGeoTagging?userId=" + userId +
                 "&startDate=" + startdate + "&endDate=" + enddate))
                 .setTag("Login")
@@ -189,7 +185,6 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                     @Override
                     public void onResponse(String response) {
                         binding.animationView.setVisibility(View.GONE);
-//                        binding.progressbar.setVisibility(View.GONE);
                         if (Utility.isStringValid(response)) {
                             JSONObject resObj = null;
                             try {
@@ -238,7 +233,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
 //                    checkForApiCall();
                     enddate = binding.tvToDate.getText().toString();
                     if (isUploaded) {
-                        getInitialUploadedTenders();
+                        getGeoTaggedFundReleaseList();
                     } else {
                         getFundReleaseListForGeoTagging();
                     }
@@ -262,7 +257,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                         binding.tvFromDate.setText(dayOfMonth + "/" + (monthOfYear + 1) + "/" + year);
                         startdate = binding.tvFromDate.getText().toString().trim();
                         if (isUploaded) {
-                            getInitialUploadedTenders();
+                            getGeoTaggedFundReleaseList();
                         } else {
                             getFundReleaseListForGeoTagging();
                         }
@@ -302,19 +297,20 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-//        if (requestCode == 1 && resultCode == RESULT_OK && data != null) {
-//            boolean isUploaded = data.getBooleanExtra("data",false);
-//            if (isUploaded){
-//                getIntiationTenderRecord();
-//            }else{
-//                Toast.makeText(this, isUploaded+"", Toast.LENGTH_SHORT).show();
-//            }
-//        }
+        if (requestCode == 1 && resultCode == RESULT_OK && data != null) {
+            boolean isUploaded = data.getBooleanExtra("data",false);
+            if (isUploaded){
+                getFundReleaseListForGeoTagging();
+            }else{
+                Toast.makeText(this, isUploaded+"", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     @Override
     public void notUploaded(NotUploaded item) {
         Intent uploadIntent = new Intent(DashboardActivity.this, ImageUploadActivity.class);
+        uploadIntent.putExtra("ID",item.fundReleaseId);
         startActivity(uploadIntent);
     }
 

@@ -65,7 +65,7 @@
 
 
         <androidx.cardview.widget.CardView
-            android:id="@+id/cv_map"
+            android:id="@+id/cv_root"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/tv_agency_name"
@@ -73,18 +73,153 @@
             android:layout_margin="8dp"
             app:cardCornerRadius="8dp">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_images"
+            <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="4dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="4dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+
+                    <ImageView
+                        android:id="@+id/cell_image"
+                        android:layout_width="match_parent"
+                        android:layout_height="300dp"
+                        android:scaleType="fitXY"
+                        android:src="@drawable/matfoundation"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+
+                    <ImageView
+                        android:visibility="gone"
+                        android:id="@+id/iv_zoom"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="16dp"
+                        android:src="@drawable/ic_zoom"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardBackgroundColor="#AD303030"
+                        app:cardCornerRadius="12dp"
+                        app:layout_constraintBottom_toBottomOf="parent">
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+
+                            <androidx.cardview.widget.CardView
+                                android:id="@+id/cv_map"
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:layout_centerVertical="true"
+                                android:layout_margin="8dp"
+                                android:layout_marginStart="8dp"
+                                android:layout_marginBottom="8dp"
+                                app:cardCornerRadius="8dp">
+
+                                <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:padding="4dp"
+                                    android:src="@drawable/ic_map" />
+
+                            </androidx.cardview.widget.CardView>
+
+                            <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_centerVertical="true"
+                                android:layout_marginEnd="8dp"
+                                android:layout_toEndOf="@+id/cv_map">
+
+                                <views.MonSemiBold
+                                    android:id="@+id/cell_tv_amount"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="8dp"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="12sp" />
+
+                                <views.MonSemiBold
+                                    android:id="@+id/cell_tv_remarks"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_below="@+id/cell_tv_amount"
+                                    android:layout_marginStart="8dp"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="12sp" />
+
+                                <views.MonSemiBold
+                                    android:id="@+id/cell_tv_lat"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_below="@+id/cell_tv_remarks"
+                                    android:layout_marginStart="8dp"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="12sp" />
+
+                                <views.MonSemiBold
+                                    android:id="@+id/cell_tv_long"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_below="@+id/cell_tv_lat"
+                                    android:layout_marginStart="8dp"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="12sp" />
+
+                                <views.MonSemiBold
+                                    android:id="@+id/cell_tv_address"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_below="@+id/cell_tv_long"
+                                    android:layout_marginStart="8dp"
+                                    android:maxLines="3"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="12sp" />
+
+                                <views.MonSemiBold
+                                    android:id="@+id/cell_tv_dt"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_below="@+id/cell_tv_address"
+                                    android:layout_marginStart="8dp"
+                                    android:maxLines="3"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="12sp" />
+                            </RelativeLayout>
+
+                        </RelativeLayout>
+
+                    </androidx.cardview.widget.CardView>
+
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.cardview.widget.CardView>
         </androidx.cardview.widget.CardView>
 
 
         <View
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
+            android:layout_below="@+id/cv_root"
             android:background="@color/colorPrimary"
-            android:layout_below="@+id/cv_map"
             android:layout_marginTop="10dp"/>
 
     </RelativeLayout>

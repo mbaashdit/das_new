@@ -69,9 +69,9 @@ public class ProjImagesAdapter extends RecyclerView.Adapter<ProjImagesAdapter.Pr
 
         holder.mTvLat.setText("Lat : "+p.latitude);
         holder.mTvLong.setText("Long : "+p.longitude);
-        holder.mTvAmount.setText("Amount : "+p.aggrementValue);
+//        holder.mTvAmount.setText("Amount : "+p.aggrementValue);
         holder.mTvRemarks.setText("Remarks : "+p.remark);
-        holder.mTvDateTime.setText("Date : "+p.aggrementDate);
+//        holder.mTvDateTime.setText("Date : "+p.aggrementDate);
 
         Glide.with(mContext).load(imageUrl)
                 .thumbnail(0.5f)

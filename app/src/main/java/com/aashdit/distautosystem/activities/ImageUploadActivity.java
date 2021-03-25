@@ -2,9 +2,15 @@ package com.aashdit.distautosystem.activities;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -44,8 +50,9 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 
-public class ImageUploadActivity extends AppCompatActivity {
+public class ImageUploadActivity extends AppCompatActivity implements LocationListener {
 
     private static final String TAG = "ImageUploadActivity";
 
@@ -54,8 +61,12 @@ public class ImageUploadActivity extends AppCompatActivity {
 
     private SharedPrefManager sp;
 
-    String userId;
+    Long userId;
     String remarks;
+
+    private LocationManager locationManager;
+
+    private Long fundReleaseId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,13 +75,14 @@ public class ImageUploadActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         sp = SharedPrefManager.getInstance(this);
-        userId = sp.getStringData(Constants.USER_ID);
+        userId = sp.getLongData(Constants.USER_ID);
         setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
+        fundReleaseId = getIntent().getLongExtra("ID",0L);
 
         Dexter.withActivity(this)
                 .withPermissions(
@@ -87,7 +99,7 @@ public class ImageUploadActivity extends AppCompatActivity {
                             // do your work now
 //                                Toast.makeText(getApplicationContext(), "All permissions are granted!", Toast.LENGTH_SHORT).show();
 //                            handler.postDelayed(runnable, 2000);
-
+                            getLocation();
                         }
 
                         // check for permanent denial of any permission
@@ -109,7 +121,11 @@ public class ImageUploadActivity extends AppCompatActivity {
         binding.ivUpload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                openCamera();
+                if (App.latitude != 0.0 && App.longitude != 0.0) {
+                    openCamera();
+                }else{
+                    Toast.makeText(ImageUploadActivity.this, "Fetching Location, Please wait.", Toast.LENGTH_LONG).show();
+                }
             }
         });
 
@@ -125,15 +141,27 @@ public class ImageUploadActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 remarks = binding.remark.getText().toString().trim();
-                if (!TextUtils.isEmpty(remarks)) {
-                    uploadImage();
-                } else {
+                if (TextUtils.isEmpty(remarks)) {
                     Toast.makeText(ImageUploadActivity.this, "Please Enter Remarks", Toast.LENGTH_SHORT).show();
+                } else if (App.latitude == 0.0 || App.longitude == 0.0) {
+                    Toast.makeText(ImageUploadActivity.this, "Fetching Location, Please wait.", Toast.LENGTH_LONG).show();
+                } else {
+                    uploadImage();
                 }
             }
         });
     }
 
+
+    private void getLocation() {
+        try {
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            assert locationManager != null;
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0, this);
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        }
+    }
     private void showSettingsDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(ImageUploadActivity.this);
         builder.setTitle("Need Permissions");
@@ -179,13 +207,13 @@ public class ImageUploadActivity extends AppCompatActivity {
 
         AndroidNetworking.upload(BuildConfig.BASE_URL + "api/captureFundReleaseGeoTagDetails")
                 .addMultipartFile("imagePath", finalFile)
-                .addMultipartParameter("fundReleaseId", remarks)
-                .addMultipartParameter("remarks", "value")
+                .addMultipartParameter("fundReleaseId", String.valueOf(fundReleaseId))
+                .addMultipartParameter("remarks", remarks)
                 .addMultipartParameter("latitude", String.valueOf(latitude))
                 .addMultipartParameter("longitude", String.valueOf(longitude))
                 .addMultipartParameter("address", address)
-                .addMultipartParameter("userId", userId)
-                .setTag("uploadTest")
+                .addMultipartParameter("userId", String.valueOf(userId))
+                .setTag("upload")
                 .setPriority(Priority.HIGH)
                 .build()
                 .setUploadProgressListener(new UploadProgressListener() {
@@ -221,7 +249,7 @@ public class ImageUploadActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(ANError anError) {
-
+                        Log.e(TAG, "onError: "+anError.getErrorDetail() );
                     }
                 });
 
@@ -273,5 +301,49 @@ public class ImageUploadActivity extends AppCompatActivity {
     private void openCamera() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         startActivityForResult(intent, REQUEST_CAMERA);
+    }
+
+    @Override
+    public void onLocationChanged(@NonNull Location location) {
+        Log.d("Tag", "LatLng===>" + location.getLatitude() + " " + location.getLongitude());
+
+        if (location.getLatitude() != 0.0 && location.getLongitude() != 0.0) {
+            App.latitude = location.getLatitude();
+            App.longitude = location.getLongitude();
+
+            Geocoder gc = new Geocoder(this, Locale.getDefault());
+            try {
+                List<Address> addresses = gc.getFromLocation(App.latitude, App.longitude, 1);
+                StringBuilder sb = new StringBuilder();
+                if (addresses.size() > 0) {
+                    Address address = addresses.get(0);
+                    for (int i = 0; i < address.getMaxAddressLineIndex(); i++) {
+                        sb.append(address.getAddressLine(i)).append("\n");
+                    }
+                    if (address.getAddressLine(0) != null)
+                        App.capturedAddress = address.getAddressLine(0);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        } else {
+            Toast.makeText(this, "Fetching Location, Please wait.", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onProviderEnabled(@NonNull String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(@NonNull String provider) {
+
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
     }
 }

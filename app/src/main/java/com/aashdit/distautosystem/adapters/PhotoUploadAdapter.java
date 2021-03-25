@@ -5,6 +5,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -12,6 +13,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.aashdit.distautosystem.R;
 import com.aashdit.distautosystem.model.Uploaded;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +49,23 @@ public class PhotoUploadAdapter extends RecyclerView.Adapter<PhotoUploadAdapter.
         holder.mTvProjectName.setSelected(true);
         holder.mTvAgencyName.setText(upload.agencyName);
 
-        bindData(holder.mRvImages,upload,upload.photoURL);
+
+        holder.mTvLat.setText("Lat : "+upload.latitude);
+        holder.mTvLong.setText("Long : "+upload.longitude);
+        holder.mTvAmount.setText("Amount : "+upload.releaseAmount);
+        holder.mTvRemarks.setText("Remarks : "+upload.remark);
+        holder.mTvDateTime.setText("Date : "+upload.uploadedDateWithTime);
+        holder.mTvAddress.setText("Address : "+upload.address);
+
+
+        Glide.with(mCtx).load(upload.uploadedImage)
+                .thumbnail(0.5f)
+                .placeholder(R.drawable.thumbail)
+                .error(R.drawable.thumbail)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(holder.mIvImage);
+
+//        bindData(holder.mRvImages,upload,upload.photoURL);
 
     }
 
@@ -78,14 +97,27 @@ public class PhotoUploadAdapter extends RecyclerView.Adapter<PhotoUploadAdapter.
 
         TextView mTvProjectName, mTvAgencyName;
         RecyclerView mRvImages;
+        ImageView mIvImage;
 
+        TextView mTvLat, mTvLong, mTvAddress, mTvDateTime,mTvAmount,mTvRemarks;
+        ImageView mIvDelete, mIvZoom;
         public ChangeLocationHolder(View itemView) {
             super(itemView);
 
             mTvProjectName = itemView.findViewById(R.id.tv_project_name);
             mTvAgencyName = itemView.findViewById(R.id.tv_agency_name);
-            mRvImages = itemView.findViewById(R.id.rv_images);
-            mRvImages.setLayoutManager(new LinearLayoutManager(mCtx, RecyclerView.VERTICAL, false));
+            mIvImage = itemView.findViewById(R.id.cell_image);
+            mTvLat = itemView.findViewById(R.id.cell_tv_lat);
+            mTvLong = itemView.findViewById(R.id.cell_tv_long);
+            mTvAddress = itemView.findViewById(R.id.cell_tv_address);
+            mIvDelete = itemView.findViewById(R.id.iv_delete);
+            mIvZoom = itemView.findViewById(R.id.iv_zoom);
+            mTvDateTime = itemView.findViewById(R.id.cell_tv_dt);
+            mTvAmount = itemView.findViewById(R.id.cell_tv_amount);
+            mTvRemarks = itemView.findViewById(R.id.cell_tv_remarks);
+
+//            mRvImages = itemView.findViewById(R.id.rv_images);
+//            mRvImages.setLayoutManager(new LinearLayoutManager(mCtx, RecyclerView.VERTICAL, false));
 
         }
     }

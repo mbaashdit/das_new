@@ -85,7 +85,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     AlertDialog.Builder builder;
     private void showLogoutDialog() {
-        builder.setMessage("Do you want to close this application ?")
+        builder.setMessage("Do you want to logout from application ?")
                 .setCancelable(false)
                 .setIcon(R.drawable.ic_power)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {

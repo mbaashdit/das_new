@@ -5,15 +5,17 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 public class Uploaded {
-    public Long tenderId;
+    public Long fundReleaseGeoTagId;
     public String projectName;
     public String agencyName;
-    public String photoURL;
+    public String uploadedImage;
     public String latitude;
     public String longitude;
     public String remark;
-    public String aggrementValue;
-    public String aggrementDate;
+    public String uploadedDateWithTime;
+    public String releaseDate;
+    public String releaseAmount;
+    public String address;
     public ArrayList<String> images;
 
 
@@ -21,13 +23,15 @@ public class Uploaded {
         Uploaded notUploaded = new Uploaded();
         notUploaded.agencyName = object.optString("agencyName");
         notUploaded.projectName = object.optString("projectName");
-        notUploaded.photoURL = object.optString("photoURL");
+        notUploaded.uploadedImage = object.optString("uploadedImage");
         notUploaded.latitude = object.optString("latitude");
         notUploaded.longitude = object.optString("longitude");
-        notUploaded.remark = object.optString("remark");
-        notUploaded.aggrementValue = object.optString("aggrementValue");
-        notUploaded.aggrementDate = object.optString("aggrementDate");
-        notUploaded.tenderId = object.optLong("tenderId");
+        notUploaded.remark = object.optString("remarks");
+        notUploaded.uploadedDateWithTime = object.optString("uploadedDateWithTime");
+        notUploaded.releaseDate = object.optString("releaseDate");
+        notUploaded.releaseAmount = object.optString("releaseAmount");
+        notUploaded.address = object.optString("address");
+        notUploaded.fundReleaseGeoTagId = object.optLong("fundReleaseGeoTagId");
         return notUploaded;
     }
 }
