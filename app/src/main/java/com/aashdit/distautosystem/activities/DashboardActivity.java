@@ -24,6 +24,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.aashdit.distautosystem.BuildConfig;
 import com.aashdit.distautosystem.adapters.ClosurePhotoNotUploadAdapter;
 import com.aashdit.distautosystem.adapters.InitiationPhotoNotUploadAdapter;
+import com.aashdit.distautosystem.adapters.InitiationPhotoUploadAdapter;
 import com.aashdit.distautosystem.adapters.PhotoNotUploadAdapter;
 import com.aashdit.distautosystem.adapters.PhotoUploadAdapter;
 import com.aashdit.distautosystem.app.App;
@@ -64,11 +65,13 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
     private ArrayList<NotUploaded> notUploadedData = new ArrayList<>();
     private ArrayList<Uploaded> uploadedData = new ArrayList<>();
     private ArrayList<InitiationData> initiationData = new ArrayList<>();
+    private ArrayList<InitiationData> initiationUploadedData = new ArrayList<>();
     private ArrayList<ClosureData> closureData = new ArrayList<>();
     private PhotoNotUploadAdapter notUploadedAdapter;
     private PhotoUploadAdapter uploadedAdapter;
     private InitiationPhotoNotUploadAdapter initiationPhotoNotUploadAdapter;
     private ClosurePhotoNotUploadAdapter closurePhotoNotUploadAdapter;
+    private InitiationPhotoUploadAdapter initiationPhotoUploadAdapter;
 
     private boolean isUploaded = false;
     private SharedPrefManager sp;
@@ -134,6 +137,8 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
             }
         });
 
+        initiationPhotoUploadAdapter =  new InitiationPhotoUploadAdapter(this,initiationUploadedData);
+
         initiationPhotoNotUploadAdapter = new InitiationPhotoNotUploadAdapter(this,initiationData);
         initiationPhotoNotUploadAdapter.setNotUploadedListener(this);
         closurePhotoNotUploadAdapter = new ClosurePhotoNotUploadAdapter(this,closureData);
@@ -156,34 +161,38 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                 if (isChecked) {
                     binding.tvUpload.setTextColor(Color.parseColor("#364F6B"));
                     binding.tvNotUpload.setTextColor(Color.parseColor("#8A364F6B"));
-                    getGeoTaggedFundReleaseList();
-                    binding.rvProjectList.setAdapter(uploadedAdapter);
+//                    getGeoTaggedFundReleaseList();
+//                    binding.rvProjectList.setAdapter(uploadedAdapter);
+                    getResponse();
                 }else {
                     binding.tvNotUpload.setTextColor(Color.parseColor("#364F6B"));
                     binding.tvUpload.setTextColor(Color.parseColor("#8A364F6B"));
-                    getFundReleaseListForGeoTagging();
-                    binding.rvProjectList.setAdapter(notUploadedAdapter);
+//                    getFundReleaseListForGeoTagging();
+//                    binding.rvProjectList.setAdapter(notUploadedAdapter);
+                    getResponse();
                 }
             }
         });
 
-//        binding.swiperefreshlayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-//            @Override
-//            public void onRefresh() {
-//                binding.swiperefreshlayout.setRefreshing(false);
-//                if (isUploaded) {
+        binding.swiperefreshlayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                binding.swiperefreshlayout.setRefreshing(false);
+                if (isUploaded) {
+                    getResponse();
 //                    getGeoTaggedFundReleaseList();
-//                } else {
+                } else {
+                    getResponse();
 //                    getFundReleaseListForGeoTagging();
-//                }
-//            }
-//        });
+                }
+            }
+        });
 
     }
 
     private void getResponse() {
         if (dataType.equals("INITIATION") && isUploaded){
-
+            getInitialUploadedTenders();
         }else if (dataType.equals("INITIATION") && !isUploaded){
             getTendersForInspection();
             binding.rvProjectList.setAdapter(initiationPhotoNotUploadAdapter);
@@ -202,6 +211,51 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
             getTendersForClosure();
             binding.rvProjectList.setAdapter(closurePhotoNotUploadAdapter);
         }
+    }
+
+    private void getInitialUploadedTenders() {
+        binding.animationView.setVisibility(View.VISIBLE);
+        AndroidNetworking.post(BuildConfig.BASE_URL.concat("api/getInitialUploadedTenders?userId=" + userId +
+                "&startDate=" + startdate + "&endDate=" + enddate))
+                .setTag("Login")
+                .setPriority(Priority.HIGH)
+                .build()
+                .getAsString(new StringRequestListener() {
+                    @Override
+                    public void onResponse(String response) {
+                        binding.animationView.setVisibility(View.GONE);
+                        if (Utility.isStringValid(response)) {
+
+                            JSONObject resObj = null;
+                            try {
+                                resObj = new JSONObject(response);
+                                String status = resObj.optString("status");
+                                if (status.equals("SUCCESS")) {
+                                    JSONArray resArray = resObj.optJSONArray("result");
+                                    if (resArray != null && resArray.length() > 0) {
+                                        initiationUploadedData.clear();
+                                        for (int i = 0; i < resArray.length(); i++) {
+                                            InitiationData uploaded = InitiationData.parseInitiationData(resArray.optJSONObject(i));
+                                            initiationUploadedData.add(uploaded);
+                                        }
+//                                        uploadedAdapter.notifyDataSetChanged();
+                                        binding.rvProjectList.setAdapter(initiationPhotoUploadAdapter);
+                                        initiationPhotoUploadAdapter.notifyDataSetChanged();
+                                    }
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+                    }
+
+                    @Override
+                    public void onError(ANError anError) {
+                        binding.animationView.setVisibility(View.GONE);
+                        Log.e(TAG, "onError: " + anError.getErrorDetail());
+                    }
+                });
     }
 
     private void getGeoTaggedFundReleaseList() {
@@ -273,6 +327,8 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                                         }
                                         initiationPhotoNotUploadAdapter.notifyDataSetChanged();
                                     }
+                                }else{
+                                    Toast.makeText(DashboardActivity.this, resObj.optString("message"), Toast.LENGTH_SHORT).show();
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();
