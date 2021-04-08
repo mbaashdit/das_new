@@ -67,6 +67,7 @@ public class ImageUploadActivity extends AppCompatActivity implements LocationLi
     private LocationManager locationManager;
 
     private Long fundReleaseId;
+    private String type;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +83,8 @@ public class ImageUploadActivity extends AppCompatActivity implements LocationLi
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
-        fundReleaseId = getIntent().getLongExtra("ID",0L);
+        fundReleaseId = getIntent().getLongExtra("ID", 0L);
+        type = getIntent().getStringExtra("TYPE");
 
         Dexter.withActivity(this)
                 .withPermissions(
@@ -146,7 +148,20 @@ public class ImageUploadActivity extends AppCompatActivity implements LocationLi
                 } else if (App.latitude == 0.0 || App.longitude == 0.0) {
                     Toast.makeText(ImageUploadActivity.this, "Fetching Location, Please wait.", Toast.LENGTH_LONG).show();
                 } else {
-                    uploadImage();
+                    switch (type) {
+                        case "FUND":
+                            uploadImage();
+                            break;
+                        case "INITITATION":
+                            initiationUploadImage();
+                            break;
+                        case "CLOSURE":
+                            closureUploadImage();
+                            break;
+                        default:
+                            break;
+                    }
+//                    uploadImage();
                 }
             }
         });
@@ -249,7 +264,111 @@ public class ImageUploadActivity extends AppCompatActivity implements LocationLi
 
                     @Override
                     public void onError(ANError anError) {
-                        Log.e(TAG, "onError: "+anError.getErrorDetail() );
+                        Log.e(TAG, "onError: " + anError.getErrorDetail());
+                    }
+                });
+
+    }
+
+    private void initiationUploadImage() {
+
+        AndroidNetworking.upload(BuildConfig.BASE_URL + "api/tenderInitialInspectionUpload")
+                .addMultipartFile("uploadImg", finalFile)
+                .addMultipartParameter("tenderId", String.valueOf(fundReleaseId))
+                .addMultipartParameter("remark", remarks)
+                .addMultipartParameter("latitude", String.valueOf(latitude))
+                .addMultipartParameter("longitude", String.valueOf(longitude))
+                .addMultipartParameter("uploadLevel", "INITIAL")
+                .addMultipartParameter("userId", String.valueOf(userId))
+                .setTag("upload")
+                .setPriority(Priority.HIGH)
+                .build()
+                .setUploadProgressListener(new UploadProgressListener() {
+                    @Override
+                    public void onProgress(long bytesUploaded, long totalBytes) {
+                        // do anything with progress
+                    }
+                })
+                .getAsString(new StringRequestListener() {
+                    @Override
+                    public void onResponse(String response) {
+                        if (Utility.isStringValid(response)) {
+                            try {
+                                JSONObject resObj = new JSONObject(response);
+                                if (resObj.optString("flag").equals("Success")) {
+                                    Intent intent = getIntent();
+                                    intent.putExtra("data", true);
+                                    setResult(RESULT_OK, intent);
+                                    finish();
+                                } else {
+                                    Intent intent = getIntent();
+                                    intent.putExtra("data", false);
+                                    setResult(RESULT_OK, intent);
+                                    finish();
+                                }
+                                Toast.makeText(ImageUploadActivity.this, resObj.optString("Message"), Toast.LENGTH_SHORT).show();
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onError(ANError anError) {
+                        Log.e(TAG, "onError: " + anError.getErrorDetail());
+                    }
+                });
+
+    }
+
+    private void closureUploadImage() {
+
+        AndroidNetworking.upload(BuildConfig.BASE_URL + "api/tenderClosureInspectionUpload")
+                .addMultipartFile("uploadImg", finalFile)
+                .addMultipartParameter("tenderId", String.valueOf(fundReleaseId))
+                .addMultipartParameter("remark", remarks)
+                .addMultipartParameter("latitude", String.valueOf(latitude))
+                .addMultipartParameter("longitude", String.valueOf(longitude))
+                .addMultipartParameter("uploadLevel", "CLOSURE")
+                .addMultipartParameter("userId", String.valueOf(userId))
+                .setTag("upload")
+                .setPriority(Priority.HIGH)
+                .build()
+                .setUploadProgressListener(new UploadProgressListener() {
+                    @Override
+                    public void onProgress(long bytesUploaded, long totalBytes) {
+                        // do anything with progress
+                    }
+                })
+                .getAsString(new StringRequestListener() {
+                    @Override
+                    public void onResponse(String response) {
+                        if (Utility.isStringValid(response)) {
+                            try {
+                                JSONObject resObj = new JSONObject(response);
+                                if (resObj.optString("flag").equals("Success")) {
+                                    Intent intent = getIntent();
+                                    intent.putExtra("data", true);
+                                    setResult(RESULT_OK, intent);
+                                    finish();
+                                } else {
+                                    Intent intent = getIntent();
+                                    intent.putExtra("data", false);
+                                    setResult(RESULT_OK, intent);
+                                    finish();
+                                }
+                                Toast.makeText(ImageUploadActivity.this, resObj.optString("Message"), Toast.LENGTH_SHORT).show();
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onError(ANError anError) {
+                        Log.e(TAG, "onError: " + anError.getErrorDetail());
                     }
                 });
 

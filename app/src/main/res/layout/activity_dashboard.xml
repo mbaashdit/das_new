@@ -205,6 +205,7 @@
 
 
                     <AutoCompleteTextView
+                        android:visibility="gone"
                         android:id="@+id/et_search"
                         android:layout_width="match_parent"
                         android:layout_height="50dp"
@@ -221,6 +222,42 @@
                         android:paddingStart="8dp"
                         android:paddingEnd="8dp" />
                 </RelativeLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <views.MonSemiBold
+                        android:padding="8dp"
+                        android:id="@+id/tv_initiation"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.33"
+                        android:textColor="@color/black"
+                        android:gravity="center_horizontal"
+                        android:text="Initiation" />
+
+                    <views.MonSemiBold
+                        android:padding="8dp"
+                        android:id="@+id/tv_fund_release"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.34"
+                        android:textColor="@color/black"
+                        android:gravity="center_horizontal"
+                        android:text="Fund Release" />
+
+                    <views.MonSemiBold
+                        android:padding="8dp"
+                        android:id="@+id/tv_closure"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.33"
+                        android:textColor="@color/black"
+                        android:gravity="center_horizontal"
+                        android:text="Closure" />
+                </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:nestedScrollingEnabled="false"

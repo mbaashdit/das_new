@@ -22,10 +22,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.aashdit.distautosystem.BuildConfig;
+import com.aashdit.distautosystem.adapters.ClosurePhotoNotUploadAdapter;
+import com.aashdit.distautosystem.adapters.InitiationPhotoNotUploadAdapter;
 import com.aashdit.distautosystem.adapters.PhotoNotUploadAdapter;
 import com.aashdit.distautosystem.adapters.PhotoUploadAdapter;
 import com.aashdit.distautosystem.app.App;
 import com.aashdit.distautosystem.databinding.ActivityDashboardBinding;
+import com.aashdit.distautosystem.model.ClosureData;
+import com.aashdit.distautosystem.model.InitiationData;
 import com.aashdit.distautosystem.model.NotUploaded;
 import com.aashdit.distautosystem.model.Uploaded;
 import com.aashdit.distautosystem.util.Constants;
@@ -50,7 +54,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 public class DashboardActivity extends AppCompatActivity implements PhotoNotUploadAdapter.NotUploadedListener ,
-        LocationListener {
+        LocationListener, InitiationPhotoNotUploadAdapter.NotUploadedListener, ClosurePhotoNotUploadAdapter.ClosureUploadListener {
 
     private static final String TAG = "DashboardActivity";
 
@@ -59,12 +63,18 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
 
     private ArrayList<NotUploaded> notUploadedData = new ArrayList<>();
     private ArrayList<Uploaded> uploadedData = new ArrayList<>();
+    private ArrayList<InitiationData> initiationData = new ArrayList<>();
+    private ArrayList<ClosureData> closureData = new ArrayList<>();
     private PhotoNotUploadAdapter notUploadedAdapter;
     private PhotoUploadAdapter uploadedAdapter;
+    private InitiationPhotoNotUploadAdapter initiationPhotoNotUploadAdapter;
+    private ClosurePhotoNotUploadAdapter closurePhotoNotUploadAdapter;
 
     private boolean isUploaded = false;
     private SharedPrefManager sp;
     private Long userId;
+
+    private String dataType = "INITIATION";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,8 +98,47 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
         setDafaultDateFormat();
         binding.animationView.setVisibility(View.GONE);
         binding.progressbar.setVisibility(View.GONE);
-        getFundReleaseListForGeoTagging();
+
 //        getInitialUploadedTenders();
+
+        binding.tvInitiation.setTextColor(Color.parseColor("#DD084B"));
+        binding.tvInitiation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dataType = "INITIATION";
+                binding.tvInitiation.setTextColor(Color.parseColor("#DD084B"));
+                binding.tvFundRelease.setTextColor(Color.parseColor("#000000"));
+                binding.tvClosure.setTextColor(Color.parseColor("#000000"));
+                getResponse();
+            }
+        });
+
+        binding.tvFundRelease.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dataType = "FUND";
+                binding.tvInitiation.setTextColor(Color.parseColor("#000000"));
+                binding.tvFundRelease.setTextColor(Color.parseColor("#DD084B"));
+                binding.tvClosure.setTextColor(Color.parseColor("#000000"));
+                getResponse();
+            }
+        });
+        binding.tvClosure.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dataType = "CLOSURE";
+                binding.tvInitiation.setTextColor(Color.parseColor("#000000"));
+                binding.tvFundRelease.setTextColor(Color.parseColor("#000000"));
+                binding.tvClosure.setTextColor(Color.parseColor("#DD084B"));
+                getResponse();
+            }
+        });
+
+        initiationPhotoNotUploadAdapter = new InitiationPhotoNotUploadAdapter(this,initiationData);
+        initiationPhotoNotUploadAdapter.setNotUploadedListener(this);
+        closurePhotoNotUploadAdapter = new ClosurePhotoNotUploadAdapter(this,closureData);
+        closurePhotoNotUploadAdapter.setClosureUploadListener(this);
+
         notUploadedAdapter = new PhotoNotUploadAdapter(this, notUploadedData);
         notUploadedAdapter.setNotUploadedListener(this);
         uploadedAdapter = new PhotoUploadAdapter(this, uploadedData);
@@ -99,6 +148,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
         binding.ivFromCalender.setOnClickListener(view1 -> setFromDateField());
         binding.ivToCalender.setOnClickListener(view1 -> setToDateField());
 
+        getResponse();
         binding.uploadSwitch.addSwitchObserver(new RMSwitch.RMSwitchObserver() {
             @Override
             public void onCheckStateChange(RMSwitch switchView, boolean isChecked) {
@@ -117,18 +167,41 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
             }
         });
 
-        binding.swiperefreshlayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                binding.swiperefreshlayout.setRefreshing(false);
-                if (isUploaded) {
-                    getGeoTaggedFundReleaseList();
-                } else {
-                    getFundReleaseListForGeoTagging();
-                }
-            }
-        });
+//        binding.swiperefreshlayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+//            @Override
+//            public void onRefresh() {
+//                binding.swiperefreshlayout.setRefreshing(false);
+//                if (isUploaded) {
+//                    getGeoTaggedFundReleaseList();
+//                } else {
+//                    getFundReleaseListForGeoTagging();
+//                }
+//            }
+//        });
 
+    }
+
+    private void getResponse() {
+        if (dataType.equals("INITIATION") && isUploaded){
+
+        }else if (dataType.equals("INITIATION") && !isUploaded){
+            getTendersForInspection();
+            binding.rvProjectList.setAdapter(initiationPhotoNotUploadAdapter);
+        }
+
+        if (dataType.equals("FUND") && isUploaded){
+
+        }else if (dataType.equals("FUND") && !isUploaded){
+            getFundReleaseListForGeoTagging();
+            binding.rvProjectList.setAdapter(notUploadedAdapter);
+        }
+
+        if (dataType.equals("CLOSURE") && isUploaded){
+
+        }else if (dataType.equals("CLOSURE") && !isUploaded){
+            getTendersForClosure();
+            binding.rvProjectList.setAdapter(closurePhotoNotUploadAdapter);
+        }
     }
 
     private void getGeoTaggedFundReleaseList() {
@@ -173,6 +246,89 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                     }
                 });
     }
+
+    private void getTendersForInspection(){
+        binding.animationView.setVisibility(View.VISIBLE);
+        AndroidNetworking.post(BuildConfig.BASE_URL.concat("api/getTendersForInspection?userId=" + userId +
+                "&startDate=" + startdate + "&endDate=" + enddate))
+                .setTag("Login")
+                .setPriority(Priority.HIGH)
+                .build()
+                .getAsString(new StringRequestListener() {
+                    @Override
+                    public void onResponse(String response) {
+                        binding.animationView.setVisibility(View.GONE);
+                        if (Utility.isStringValid(response)) {
+                            JSONObject resObj = null;
+                            try {
+                                resObj = new JSONObject(response);
+                                String status = resObj.optString("status");
+                                if (status.equals("SUCCESS")) {
+                                    JSONArray resArray = resObj.optJSONArray("result");
+                                    if (resArray != null && resArray.length() > 0) {
+                                        initiationData.clear();
+                                        for (int i = 0; i < resArray.length(); i++) {
+                                            InitiationData notUploaded = InitiationData.parseInitiationData(resArray.optJSONObject(i));
+                                            initiationData.add(notUploaded);
+                                        }
+                                        initiationPhotoNotUploadAdapter.notifyDataSetChanged();
+                                    }
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onError(ANError anError) {
+                        binding.animationView.setVisibility(View.GONE);
+                        Log.e(TAG, "onError: " + anError.getErrorDetail());
+                    }
+                });
+    }
+
+    private void getTendersForClosure(){
+        binding.animationView.setVisibility(View.VISIBLE);
+        AndroidNetworking.post(BuildConfig.BASE_URL.concat("api/getTendersForClosure?userId=" + userId +
+                "&startDate=" + startdate + "&endDate=" + enddate))
+                .setTag("Login")
+                .setPriority(Priority.HIGH)
+                .build()
+                .getAsString(new StringRequestListener() {
+                    @Override
+                    public void onResponse(String response) {
+                        binding.animationView.setVisibility(View.GONE);
+                        if (Utility.isStringValid(response)) {
+                            JSONObject resObj = null;
+                            try {
+                                resObj = new JSONObject(response);
+                                String status = resObj.optString("status");
+                                if (status.equals("SUCCESS")) {
+                                    JSONArray resArray = resObj.optJSONArray("result");
+                                    if (resArray != null && resArray.length() > 0) {
+                                        closureData.clear();
+                                        for (int i = 0; i < resArray.length(); i++) {
+                                            ClosureData notUploaded = ClosureData.parseInitiationData(resArray.optJSONObject(i));
+                                            closureData.add(notUploaded);
+                                        }
+                                        initiationPhotoNotUploadAdapter.notifyDataSetChanged();
+                                    }
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onError(ANError anError) {
+                        binding.animationView.setVisibility(View.GONE);
+                        Log.e(TAG, "onError: " + anError.getErrorDetail());
+                    }
+                });
+    }
+
 
     private void getFundReleaseListForGeoTagging() {
         binding.animationView.setVisibility(View.VISIBLE);
@@ -311,6 +467,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
     public void notUploaded(NotUploaded item) {
         Intent uploadIntent = new Intent(DashboardActivity.this, ImageUploadActivity.class);
         uploadIntent.putExtra("ID",item.fundReleaseId);
+        uploadIntent.putExtra("TYPE","FUND");
         startActivity(uploadIntent);
     }
 
@@ -355,5 +512,21 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
     @Override
     public void onProviderDisabled(@NonNull String provider) {
 
+    }
+
+    @Override
+    public void notUploaded(InitiationData resultResponse) {
+        Intent uploadIntent = new Intent(DashboardActivity.this, ImageUploadActivity.class);
+        uploadIntent.putExtra("ID",resultResponse.tenderId);
+        uploadIntent.putExtra("TYPE","INITITATION");
+        startActivity(uploadIntent);
+    }
+
+    @Override
+    public void onClosureUpload(int position) {
+        Intent uploadIntent = new Intent(DashboardActivity.this, ImageUploadActivity.class);
+        uploadIntent.putExtra("ID",closureData.get(position).tenderId);
+        uploadIntent.putExtra("TYPE","CLOSURE");
+        startActivity(uploadIntent);
     }
 }
