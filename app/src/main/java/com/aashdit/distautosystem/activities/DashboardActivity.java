@@ -23,6 +23,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.aashdit.distautosystem.BuildConfig;
 import com.aashdit.distautosystem.adapters.ClosurePhotoNotUploadAdapter;
+import com.aashdit.distautosystem.adapters.ClosurePhotoUploadAdapter;
 import com.aashdit.distautosystem.adapters.InitiationPhotoNotUploadAdapter;
 import com.aashdit.distautosystem.adapters.InitiationPhotoUploadAdapter;
 import com.aashdit.distautosystem.adapters.PhotoNotUploadAdapter;
@@ -67,11 +68,13 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
     private ArrayList<InitiationData> initiationData = new ArrayList<>();
     private ArrayList<InitiationData> initiationUploadedData = new ArrayList<>();
     private ArrayList<ClosureData> closureData = new ArrayList<>();
+    private ArrayList<ClosureData> closureUploadedData = new ArrayList<>();
     private PhotoNotUploadAdapter notUploadedAdapter;
     private PhotoUploadAdapter uploadedAdapter;
     private InitiationPhotoNotUploadAdapter initiationPhotoNotUploadAdapter;
-    private ClosurePhotoNotUploadAdapter closurePhotoNotUploadAdapter;
     private InitiationPhotoUploadAdapter initiationPhotoUploadAdapter;
+    private ClosurePhotoNotUploadAdapter closurePhotoNotUploadAdapter;
+    private ClosurePhotoUploadAdapter closurePhotoUploadAdapter;
 
     private boolean isUploaded = false;
     private SharedPrefManager sp;
@@ -143,6 +146,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
         initiationPhotoNotUploadAdapter.setNotUploadedListener(this);
         closurePhotoNotUploadAdapter = new ClosurePhotoNotUploadAdapter(this,closureData);
         closurePhotoNotUploadAdapter.setClosureUploadListener(this);
+        closurePhotoUploadAdapter = new ClosurePhotoUploadAdapter(this,closureUploadedData);
 
         notUploadedAdapter = new PhotoNotUploadAdapter(this, notUploadedData);
         notUploadedAdapter.setNotUploadedListener(this);
@@ -199,14 +203,15 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
         }
 
         if (dataType.equals("FUND") && isUploaded){
-
+            getGeoTaggedFundReleaseList();
         }else if (dataType.equals("FUND") && !isUploaded){
             getFundReleaseListForGeoTagging();
             binding.rvProjectList.setAdapter(notUploadedAdapter);
         }
 
         if (dataType.equals("CLOSURE") && isUploaded){
-
+            getClosureUploadedTenders();
+            binding.rvProjectList.setAdapter(closurePhotoUploadAdapter);
         }else if (dataType.equals("CLOSURE") && !isUploaded){
             getTendersForClosure();
             binding.rvProjectList.setAdapter(closurePhotoNotUploadAdapter);
@@ -241,49 +246,6 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
 //                                        uploadedAdapter.notifyDataSetChanged();
                                         binding.rvProjectList.setAdapter(initiationPhotoUploadAdapter);
                                         initiationPhotoUploadAdapter.notifyDataSetChanged();
-                                    }
-                                }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-
-                        }
-                    }
-
-                    @Override
-                    public void onError(ANError anError) {
-                        binding.animationView.setVisibility(View.GONE);
-                        Log.e(TAG, "onError: " + anError.getErrorDetail());
-                    }
-                });
-    }
-
-    private void getGeoTaggedFundReleaseList() {
-        binding.animationView.setVisibility(View.VISIBLE);
-        AndroidNetworking.get(BuildConfig.BASE_URL.concat("api/getGeoTaggedFundReleaseList?userId=" + userId +
-                "&startDate=" + startdate + "&endDate=" + enddate))
-                .setTag("Login")
-                .setPriority(Priority.HIGH)
-                .build()
-                .getAsString(new StringRequestListener() {
-                    @Override
-                    public void onResponse(String response) {
-                        binding.animationView.setVisibility(View.GONE);
-                        if (Utility.isStringValid(response)) {
-
-                            JSONObject resObj = null;
-                            try {
-                                resObj = new JSONObject(response);
-                                String status = resObj.optString("flag");
-                                if (status.equals("Success")) {
-                                    JSONArray resArray = resObj.optJSONArray("fundReleaseList");
-                                    if (resArray != null && resArray.length() > 0) {
-                                        uploadedData.clear();
-                                        for (int i = 0; i < resArray.length(); i++) {
-                                            Uploaded uploaded = Uploaded.parseUploaded(resArray.optJSONObject(i));
-                                            uploadedData.add(uploaded);
-                                        }
-                                        uploadedAdapter.notifyDataSetChanged();
                                     }
                                 }
                             } catch (JSONException e) {
@@ -385,6 +347,89 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                 });
     }
 
+    private void getClosureUploadedTenders(){
+        binding.animationView.setVisibility(View.VISIBLE);
+        AndroidNetworking.post(BuildConfig.BASE_URL.concat("api/getClosureUploadedTenders?userId=" + userId +
+                "&startDate=" + startdate + "&endDate=" + enddate))
+                .setTag("Login")
+                .setPriority(Priority.HIGH)
+                .build()
+                .getAsString(new StringRequestListener() {
+                    @Override
+                    public void onResponse(String response) {
+                        binding.animationView.setVisibility(View.GONE);
+                        if (Utility.isStringValid(response)) {
+                            JSONObject resObj = null;
+                            try {
+                                resObj = new JSONObject(response);
+                                String status = resObj.optString("status");
+                                if (status.equals("SUCCESS")) {
+                                    JSONArray resArray = resObj.optJSONArray("result");
+                                    if (resArray != null && resArray.length() > 0) {
+                                        closureUploadedData.clear();
+                                        for (int i = 0; i < resArray.length(); i++) {
+                                            ClosureData notUploaded = ClosureData.parseInitiationData(resArray.optJSONObject(i));
+                                            closureUploadedData.add(notUploaded);
+                                        }
+                                        closurePhotoUploadAdapter.notifyDataSetChanged();
+                                    }
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onError(ANError anError) {
+                        binding.animationView.setVisibility(View.GONE);
+                        Log.e(TAG, "onError: " + anError.getErrorDetail());
+                    }
+                });
+    }
+
+    private void getGeoTaggedFundReleaseList() {
+        binding.animationView.setVisibility(View.VISIBLE);
+        AndroidNetworking.get(BuildConfig.BASE_URL.concat("api/getGeoTaggedFundReleaseList?userId=" + userId +
+                "&startDate=" + startdate + "&endDate=" + enddate))
+                .setTag("Login")
+                .setPriority(Priority.HIGH)
+                .build()
+                .getAsString(new StringRequestListener() {
+                    @Override
+                    public void onResponse(String response) {
+                        binding.animationView.setVisibility(View.GONE);
+                        if (Utility.isStringValid(response)) {
+
+                            JSONObject resObj = null;
+                            try {
+                                resObj = new JSONObject(response);
+                                String status = resObj.optString("flag");
+                                if (status.equals("Success")) {
+                                    JSONArray resArray = resObj.optJSONArray("fundReleaseList");
+                                    if (resArray != null && resArray.length() > 0) {
+                                        uploadedData.clear();
+                                        for (int i = 0; i < resArray.length(); i++) {
+                                            Uploaded uploaded = Uploaded.parseUploaded(resArray.optJSONObject(i));
+                                            uploadedData.add(uploaded);
+                                        }
+                                        uploadedAdapter.notifyDataSetChanged();
+                                    }
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+                    }
+
+                    @Override
+                    public void onError(ANError anError) {
+                        binding.animationView.setVisibility(View.GONE);
+                        Log.e(TAG, "onError: " + anError.getErrorDetail());
+                    }
+                });
+    }
 
     private void getFundReleaseListForGeoTagging() {
         binding.animationView.setVisibility(View.VISIBLE);
@@ -450,7 +495,9 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                         getFundReleaseListForGeoTagging();
                     }
                 }, mYear, mMonth, mDay);
-        datePickerDialog.getDatePicker().setMaxDate(System.currentTimeMillis());
+        if (!dataType.equals("FUND")) {
+            datePickerDialog.getDatePicker().setMaxDate(System.currentTimeMillis());
+        }
         datePickerDialog.show();
     }
 
@@ -476,7 +523,9 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
 //                    checkForApiCall();
                     }
                 }, mYear, mMonth, mDay);
-        datePickerDialog.getDatePicker().setMaxDate(System.currentTimeMillis());
+        if (!dataType.equals("FUND")) {
+            datePickerDialog.getDatePicker().setMaxDate(System.currentTimeMillis());
+        }
         datePickerDialog.show();
     }
     private void setDafaultDateFormat() {
