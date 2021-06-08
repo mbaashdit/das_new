@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.aashdit.distautosystem.R;
+import com.aashdit.distautosystem.model.AddressData;
 import com.aashdit.distautosystem.model.Uploaded;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -50,27 +51,27 @@ public class PhotoUploadAdapter extends RecyclerView.Adapter<PhotoUploadAdapter.
         holder.mTvAgencyName.setText(upload.agencyName);
 
 
-        holder.mTvLat.setText("Lat : "+upload.latitude);
-        holder.mTvLong.setText("Long : "+upload.longitude);
-        holder.mTvAmount.setText("Amount : "+upload.releaseAmount);
-        holder.mTvRemarks.setText("Remarks : "+upload.remark);
-        holder.mTvDateTime.setText("Date : "+upload.uploadedDateWithTime);
-        holder.mTvAddress.setText("Address : "+upload.address);
+//        holder.mTvLat.setText("Lat : "+upload.latitude);
+//        holder.mTvLong.setText("Long : "+upload.longitude);
+//        holder.mTvAmount.setText("Amount : "+upload.releaseAmount);
+//        holder.mTvRemarks.setText("Remarks : "+upload.remark);
+//        holder.mTvDateTime.setText("Date : "+upload.uploadedDateWithTime);
+//        holder.mTvAddress.setText("Address : "+upload.address);
 
 
-        Glide.with(mCtx).load(upload.uploadedImage)
-                .thumbnail(0.5f)
-                .placeholder(R.drawable.thumbail)
-                .error(R.drawable.thumbail)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(holder.mIvImage);
+//        Glide.with(mCtx).load(upload.uploadedImage)
+//                .thumbnail(0.5f)
+//                .placeholder(R.drawable.thumbail)
+//                .error(R.drawable.thumbail)
+//                .diskCacheStrategy(DiskCacheStrategy.ALL)
+//                .into(holder.mIvImage);
 
-//        bindData(holder.mRvImages,upload,upload.photoURL);
+        bindData(holder.mRvImages,upload,upload.financialPhysicalProgressList);
 
     }
 
 
-    private void bindData(RecyclerView recyclerView, Uploaded uploadedData, String imageUrl) {
+    private void bindData(RecyclerView recyclerView, Uploaded uploadedData, ArrayList<AddressData> imageUrl) {
         ProjImagesAdapter adapter = new ProjImagesAdapter(mCtx, uploadedData, imageUrl);
 //        adapter.setFullImageListener(new StatusImageAdapter.FullImageListener() {
 //            @Override
@@ -99,25 +100,25 @@ public class PhotoUploadAdapter extends RecyclerView.Adapter<PhotoUploadAdapter.
         RecyclerView mRvImages;
         ImageView mIvImage;
 
-        TextView mTvLat, mTvLong, mTvAddress, mTvDateTime,mTvAmount,mTvRemarks;
-        ImageView mIvDelete, mIvZoom;
+//        TextView mTvLat, mTvLong, mTvAddress, mTvDateTime,mTvAmount,mTvRemarks;
+//        ImageView mIvDelete, mIvZoom;
         public ChangeLocationHolder(View itemView) {
             super(itemView);
 
             mTvProjectName = itemView.findViewById(R.id.tv_project_name);
             mTvAgencyName = itemView.findViewById(R.id.tv_agency_name);
-            mIvImage = itemView.findViewById(R.id.cell_image);
-            mTvLat = itemView.findViewById(R.id.cell_tv_lat);
-            mTvLong = itemView.findViewById(R.id.cell_tv_long);
-            mTvAddress = itemView.findViewById(R.id.cell_tv_address);
-            mIvDelete = itemView.findViewById(R.id.iv_delete);
-            mIvZoom = itemView.findViewById(R.id.iv_zoom);
-            mTvDateTime = itemView.findViewById(R.id.cell_tv_dt);
-            mTvAmount = itemView.findViewById(R.id.cell_tv_amount);
-            mTvRemarks = itemView.findViewById(R.id.cell_tv_remarks);
+//            mIvImage = itemView.findViewById(R.id.cell_image);
+//            mTvLat = itemView.findViewById(R.id.cell_tv_lat);
+//            mTvLong = itemView.findViewById(R.id.cell_tv_long);
+//            mTvAddress = itemView.findViewById(R.id.cell_tv_address);
+//            mIvDelete = itemView.findViewById(R.id.iv_delete);
+//            mIvZoom = itemView.findViewById(R.id.iv_zoom);
+//            mTvDateTime = itemView.findViewById(R.id.cell_tv_dt);
+//            mTvAmount = itemView.findViewById(R.id.cell_tv_amount);
+//            mTvRemarks = itemView.findViewById(R.id.cell_tv_remarks);
 
-//            mRvImages = itemView.findViewById(R.id.rv_images);
-//            mRvImages.setLayoutManager(new LinearLayoutManager(mCtx, RecyclerView.VERTICAL, false));
+            mRvImages = itemView.findViewById(R.id.rv_fund_phases);
+            mRvImages.setLayoutManager(new LinearLayoutManager(mCtx, RecyclerView.HORIZONTAL, false));
 
         }
     }

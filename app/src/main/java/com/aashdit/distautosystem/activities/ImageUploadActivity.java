@@ -27,6 +27,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.aashdit.distautosystem.BuildConfig;
+import com.aashdit.distautosystem.R;
 import com.aashdit.distautosystem.app.App;
 import com.aashdit.distautosystem.databinding.ActivityImageUploadBinding;
 import com.aashdit.distautosystem.util.Constants;
@@ -38,6 +39,7 @@ import com.androidnetworking.common.Priority;
 import com.androidnetworking.error.ANError;
 import com.androidnetworking.interfaces.StringRequestListener;
 import com.androidnetworking.interfaces.UploadProgressListener;
+import com.bumptech.glide.Glide;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -49,25 +51,27 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public class ImageUploadActivity extends AppCompatActivity implements LocationListener {
 
     private static final String TAG = "ImageUploadActivity";
-
-    private ActivityImageUploadBinding binding;
     int REQUEST_CAMERA = 2;
-
-    private SharedPrefManager sp;
-
     Long userId;
     String remarks;
-
+    double latitude, longitude;
+    String address = "";
+    String imageFilePath = "";
+    File finalFile;
+    private ActivityImageUploadBinding binding;
+    private SharedPrefManager sp;
+    private List<File> imageFiles = new ArrayList<>();
     private LocationManager locationManager;
-
     private Long fundReleaseId;
     private String type;
+    private int uploadedFileCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,7 +129,17 @@ public class ImageUploadActivity extends AppCompatActivity implements LocationLi
             public void onClick(View view) {
                 if (App.latitude != 0.0 && App.longitude != 0.0) {
                     openCamera();
-                }else{
+                } else {
+                    Toast.makeText(ImageUploadActivity.this, "Fetching Location, Please wait.", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+        binding.ivUpload2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (App.latitude != 0.0 && App.longitude != 0.0) {
+                    openCamera();
+                } else {
                     Toast.makeText(ImageUploadActivity.this, "Fetching Location, Please wait.", Toast.LENGTH_LONG).show();
                 }
             }
@@ -143,7 +157,9 @@ public class ImageUploadActivity extends AppCompatActivity implements LocationLi
             public void onClick(View view) {
 
                 remarks = binding.remark.getText().toString().trim();
-                if (TextUtils.isEmpty(remarks)) {
+                if (imageFiles.size() < 2) {
+                    Toast.makeText(ImageUploadActivity.this, "Please select 2 image", Toast.LENGTH_SHORT).show();
+                } else if (TextUtils.isEmpty(remarks)) {
                     Toast.makeText(ImageUploadActivity.this, "Please Enter Remarks", Toast.LENGTH_SHORT).show();
                 } else if (App.latitude == 0.0 || App.longitude == 0.0) {
                     Toast.makeText(ImageUploadActivity.this, "Fetching Location, Please wait.", Toast.LENGTH_LONG).show();
@@ -167,16 +183,17 @@ public class ImageUploadActivity extends AppCompatActivity implements LocationLi
         });
     }
 
-
     private void getLocation() {
         try {
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             assert locationManager != null;
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0, this);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 0, this);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 2000, 0, this);
         } catch (SecurityException e) {
             e.printStackTrace();
         }
     }
+
     private void showSettingsDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(ImageUploadActivity.this);
         builder.setTitle("Need Permissions");
@@ -205,9 +222,6 @@ public class ImageUploadActivity extends AppCompatActivity implements LocationLi
         startActivityForResult(intent, 101);
     }
 
-    double latitude, longitude;
-    String address = "";
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -221,7 +235,7 @@ public class ImageUploadActivity extends AppCompatActivity implements LocationLi
     private void uploadImage() {
 
         AndroidNetworking.upload(BuildConfig.BASE_URL + "api/captureFundReleaseGeoTagDetails")
-                .addMultipartFile("imagePath", finalFile)
+                .addMultipartFile("imagePath", imageFiles.get(uploadedFileCount))
                 .addMultipartParameter("fundReleaseId", String.valueOf(fundReleaseId))
                 .addMultipartParameter("remarks", remarks)
                 .addMultipartParameter("latitude", String.valueOf(latitude))
@@ -244,14 +258,20 @@ public class ImageUploadActivity extends AppCompatActivity implements LocationLi
                             try {
                                 JSONObject resObj = new JSONObject(response);
                                 if (resObj.optString("flag").equals("Success")) {
+                                    uploadedFileCount += 1;
+                                    if (uploadedFileCount == 2) {
+                                        uploadedFileCount = 0;
+                                        Intent intent = getIntent();
+                                        intent.putExtra("data", true);
+                                        setResult(RESULT_OK, intent);
+                                        finish();
+                                    } else {
+                                        uploadImage();
+                                    }
+                                } else {
                                     Intent intent = getIntent();
-                                    intent.putExtra("data",true);
-                                    setResult(RESULT_OK,intent);
-                                    finish();
-                                }else{
-                                    Intent intent = getIntent();
-                                    intent.putExtra("data",false);
-                                    setResult(RESULT_OK,intent);
+                                    intent.putExtra("data", false);
+                                    setResult(RESULT_OK, intent);
                                     finish();
                                 }
                                 Toast.makeText(ImageUploadActivity.this, resObj.optString("Message"), Toast.LENGTH_SHORT).show();
@@ -273,7 +293,7 @@ public class ImageUploadActivity extends AppCompatActivity implements LocationLi
     private void initiationUploadImage() {
 
         AndroidNetworking.upload(BuildConfig.BASE_URL + "api/tenderInitialInspectionUpload")
-                .addMultipartFile("uploadImg", finalFile)
+                .addMultipartFile("uploadImg", imageFiles.get(uploadedFileCount))
                 .addMultipartParameter("tenderId", String.valueOf(fundReleaseId))
                 .addMultipartParameter("remark", remarks)
                 .addMultipartParameter("latitude", String.valueOf(latitude))
@@ -295,18 +315,24 @@ public class ImageUploadActivity extends AppCompatActivity implements LocationLi
                         if (Utility.isStringValid(response)) {
                             try {
                                 JSONObject resObj = new JSONObject(response);
-                                if (resObj.optString("flag").equals("Success")) {
-                                    Intent intent = getIntent();
-                                    intent.putExtra("data", true);
-                                    setResult(RESULT_OK, intent);
-                                    finish();
+                                if (resObj.optString("outcome").equals("Photo Uploaded Successfully")) {
+                                    uploadedFileCount += 1;
+                                    if (uploadedFileCount == 2) {
+                                        uploadedFileCount = 0;
+                                        Intent intent = getIntent();
+                                        intent.putExtra("data", true);
+                                        setResult(RESULT_OK, intent);
+                                        finish();
+                                    } else {
+                                        initiationUploadImage();
+                                    }
                                 } else {
                                     Intent intent = getIntent();
                                     intent.putExtra("data", false);
                                     setResult(RESULT_OK, intent);
                                     finish();
                                 }
-                                Toast.makeText(ImageUploadActivity.this, resObj.optString("Message"), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(ImageUploadActivity.this, resObj.optString("outcome"), Toast.LENGTH_SHORT).show();
 
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -325,7 +351,7 @@ public class ImageUploadActivity extends AppCompatActivity implements LocationLi
     private void closureUploadImage() {
 
         AndroidNetworking.upload(BuildConfig.BASE_URL + "api/tenderClosureInspectionUpload")
-                .addMultipartFile("uploadImg", finalFile)
+                .addMultipartFile("uploadImg", imageFiles.get(uploadedFileCount))
                 .addMultipartParameter("tenderId", String.valueOf(fundReleaseId))
                 .addMultipartParameter("remark", remarks)
                 .addMultipartParameter("latitude", String.valueOf(latitude))
@@ -347,18 +373,28 @@ public class ImageUploadActivity extends AppCompatActivity implements LocationLi
                         if (Utility.isStringValid(response)) {
                             try {
                                 JSONObject resObj = new JSONObject(response);
-                                if (resObj.optString("flag").equals("Success")) {
-                                    Intent intent = getIntent();
-                                    intent.putExtra("data", true);
-                                    setResult(RESULT_OK, intent);
-                                    finish();
+                                if (resObj.optString("outcome").equals("Photo Uploaded Successfully")) {
+                                    uploadedFileCount += 1;
+                                    if (uploadedFileCount == 2) {
+                                        uploadedFileCount = 0;
+                                        Intent intent = getIntent();
+                                        intent.putExtra("data", true);
+                                        setResult(RESULT_OK, intent);
+                                        finish();
+                                    } else {
+                                        closureUploadImage();
+                                    }
+//                                    Intent intent = getIntent();
+//                                    intent.putExtra("data", true);
+//                                    setResult(RESULT_OK, intent);
+//                                    finish();
                                 } else {
                                     Intent intent = getIntent();
                                     intent.putExtra("data", false);
                                     setResult(RESULT_OK, intent);
                                     finish();
                                 }
-                                Toast.makeText(ImageUploadActivity.this, resObj.optString("Message"), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(ImageUploadActivity.this, resObj.optString("outcome"), Toast.LENGTH_SHORT).show();
 
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -382,9 +418,6 @@ public class ImageUploadActivity extends AppCompatActivity implements LocationLi
         return super.onOptionsItemSelected(item);
     }
 
-    String imageFilePath = "";
-    File finalFile;
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -392,12 +425,25 @@ public class ImageUploadActivity extends AppCompatActivity implements LocationLi
             if (data != null) {
                 if (data.hasExtra("data")) {
                     Bitmap bitmap = (Bitmap) data.getExtras().get("data");
-                    binding.ivUpload.setImageBitmap(bitmap);
+
 //                    onCaptureImageResult(bitmap);
                     Uri furi = getImageUri(ImageUploadActivity.this, bitmap);
                     //File finalFile = new File(getRealPathFromUri(uri));
                     finalFile = FileUtils.getFile(ImageUploadActivity.this, furi);
+                    imageFiles.add(finalFile);
                     imageFilePath = finalFile.toString();
+
+                    if (imageFiles.size() == 1 && imageFiles.get(0) != null) {
+                        Glide.with(ImageUploadActivity.this).load(imageFiles.get(0))
+                                .placeholder(R.drawable.ic_upload).into(binding.ivUpload);
+//                        binding.ivUpload.setImageBitmap(imageFiles.get(0));
+                    }
+                    if (imageFiles.size() == 2 && imageFiles.get(1) != null) {
+                        Glide.with(ImageUploadActivity.this).load(imageFiles.get(1))
+                                .placeholder(R.drawable.ic_upload).into(binding.ivUpload2);
+//                        binding.ivUpload2.setImageBitmap(bitmap);
+                    }
+
                     Log.v("imagepath", imageFilePath);
                 }
             } else {

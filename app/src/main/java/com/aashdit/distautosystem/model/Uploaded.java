@@ -1,5 +1,6 @@
 package com.aashdit.distautosystem.model;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ public class Uploaded {
     public String releaseDate;
     public String releaseAmount;
     public String address;
-    public ArrayList<String> images;
+    public ArrayList<AddressData> financialPhysicalProgressList;
 
 
     public static Uploaded parseUploaded(JSONObject object) {
@@ -32,6 +33,14 @@ public class Uploaded {
         notUploaded.releaseAmount = object.optString("releaseAmount");
         notUploaded.address = object.optString("address");
         notUploaded.fundReleaseGeoTagId = object.optLong("fundReleaseGeoTagId");
+        notUploaded.financialPhysicalProgressList = new ArrayList<>();
+        JSONArray jsonArray = object.optJSONArray("financialPhysicalProgressList");
+        if (jsonArray != null && jsonArray.length() > 0){
+            for (int i = 0; i < jsonArray.length(); i++) {
+                AddressData addressData = AddressData.parseAddressData(jsonArray.optJSONObject(i));
+                notUploaded.financialPhysicalProgressList.add(addressData);
+            }
+        }
         return notUploaded;
     }
 }

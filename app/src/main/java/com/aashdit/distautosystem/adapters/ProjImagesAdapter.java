@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.aashdit.distautosystem.R;
+import com.aashdit.distautosystem.model.AddressData;
 import com.aashdit.distautosystem.model.TagData;
 import com.aashdit.distautosystem.model.Uploaded;
 import com.bumptech.glide.Glide;
@@ -28,12 +29,13 @@ public class ProjImagesAdapter extends RecyclerView.Adapter<ProjImagesAdapter.Pr
 
     private Context mContext;
     private Uploaded p;
-    private String imageUrl, currPhaseCode, currStageCode, stageCode;
+//    private String imageUrl, currPhaseCode, currStageCode, stageCode;
+    private ArrayList<AddressData> addressData;
 
-    public ProjImagesAdapter(Context mContext, Uploaded projects, String imageUrl) {
+    public ProjImagesAdapter(Context mContext, Uploaded projects, ArrayList<AddressData> imageUrl) {
         this.mContext = mContext;
         this.p = projects;
-        this.imageUrl = imageUrl;
+        this.addressData = imageUrl;
     }
 
     @NonNull
@@ -45,13 +47,12 @@ public class ProjImagesAdapter extends RecyclerView.Adapter<ProjImagesAdapter.Pr
 
     @Override
     public void onBindViewHolder(@NonNull ProjectListHolder holder, int position) {
-//        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
 
-//        Uploaded p = projects.get(position);
+        AddressData data = addressData.get(position);
 
         Geocoder gc = new Geocoder(mContext, Locale.getDefault());
         try {
-            List<Address> addresses = gc.getFromLocation(Double.parseDouble(p.latitude), Double.parseDouble(p.longitude), 1);
+            List<Address> addresses = gc.getFromLocation(Double.parseDouble(data.latitude), Double.parseDouble(data.longitude), 1);
             StringBuilder sb = new StringBuilder();
             if (addresses.size() > 0) {
                 Address address = addresses.get(0);
@@ -67,13 +68,13 @@ public class ProjImagesAdapter extends RecyclerView.Adapter<ProjImagesAdapter.Pr
             e.printStackTrace();
         }
 
-        holder.mTvLat.setText("Lat : "+p.latitude);
-        holder.mTvLong.setText("Long : "+p.longitude);
+        holder.mTvLat.setText("Lat : "+data.latitude);
+        holder.mTvLong.setText("Long : "+data.longitude);
 //        holder.mTvAmount.setText("Amount : "+p.aggrementValue);
-        holder.mTvRemarks.setText("Remarks : "+p.remark);
+        holder.mTvRemarks.setText("Remarks : "+data.remarks);
 //        holder.mTvDateTime.setText("Date : "+p.aggrementDate);
 
-        Glide.with(mContext).load(imageUrl)
+        Glide.with(mContext).load(data.uploadedImage)
                 .thumbnail(0.5f)
                 .placeholder(R.drawable.avatardefault)
                 .error(R.drawable.avatardefault)
@@ -93,7 +94,7 @@ public class ProjImagesAdapter extends RecyclerView.Adapter<ProjImagesAdapter.Pr
 
     @Override
     public int getItemCount() {
-        return 1;//projects.size();
+        return addressData.size();//projects.size();
     }
 
     public static class ProjectListHolder extends RecyclerView.ViewHolder {

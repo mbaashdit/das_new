@@ -9,7 +9,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.Toast;
@@ -55,7 +54,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-public class DashboardActivity extends AppCompatActivity implements PhotoNotUploadAdapter.NotUploadedListener ,
+public class DashboardActivity extends AppCompatActivity implements PhotoNotUploadAdapter.NotUploadedListener,
         LocationListener, InitiationPhotoNotUploadAdapter.NotUploadedListener, ClosurePhotoNotUploadAdapter.ClosureUploadListener {
 
     private static final String TAG = "DashboardActivity";
@@ -81,6 +80,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
     private Long userId;
 
     private String dataType = "INITIATION";
+    private int mYear, mMonth, mDay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -140,13 +140,13 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
             }
         });
 
-        initiationPhotoUploadAdapter =  new InitiationPhotoUploadAdapter(this,initiationUploadedData);
+        initiationPhotoUploadAdapter = new InitiationPhotoUploadAdapter(this, initiationUploadedData);
 
-        initiationPhotoNotUploadAdapter = new InitiationPhotoNotUploadAdapter(this,initiationData);
+        initiationPhotoNotUploadAdapter = new InitiationPhotoNotUploadAdapter(this, initiationData);
         initiationPhotoNotUploadAdapter.setNotUploadedListener(this);
-        closurePhotoNotUploadAdapter = new ClosurePhotoNotUploadAdapter(this,closureData);
+        closurePhotoNotUploadAdapter = new ClosurePhotoNotUploadAdapter(this, closureData);
         closurePhotoNotUploadAdapter.setClosureUploadListener(this);
-        closurePhotoUploadAdapter = new ClosurePhotoUploadAdapter(this,closureUploadedData);
+        closurePhotoUploadAdapter = new ClosurePhotoUploadAdapter(this, closureUploadedData);
 
         notUploadedAdapter = new PhotoNotUploadAdapter(this, notUploadedData);
         notUploadedAdapter.setNotUploadedListener(this);
@@ -168,7 +168,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
 //                    getGeoTaggedFundReleaseList();
 //                    binding.rvProjectList.setAdapter(uploadedAdapter);
                     getResponse();
-                }else {
+                } else {
                     binding.tvNotUpload.setTextColor(Color.parseColor("#364F6B"));
                     binding.tvUpload.setTextColor(Color.parseColor("#8A364F6B"));
 //                    getFundReleaseListForGeoTagging();
@@ -195,24 +195,24 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
     }
 
     private void getResponse() {
-        if (dataType.equals("INITIATION") && isUploaded){
+        if (dataType.equals("INITIATION") && isUploaded) {
             getInitialUploadedTenders();
-        }else if (dataType.equals("INITIATION") && !isUploaded){
+        } else if (dataType.equals("INITIATION") && !isUploaded) {
             getTendersForInspection();
             binding.rvProjectList.setAdapter(initiationPhotoNotUploadAdapter);
         }
 
-        if (dataType.equals("FUND") && isUploaded){
+        if (dataType.equals("FUND") && isUploaded) {
             getGeoTaggedFundReleaseList();
-        }else if (dataType.equals("FUND") && !isUploaded){
+        } else if (dataType.equals("FUND") && !isUploaded) {
             getFundReleaseListForGeoTagging();
             binding.rvProjectList.setAdapter(notUploadedAdapter);
         }
 
-        if (dataType.equals("CLOSURE") && isUploaded){
+        if (dataType.equals("CLOSURE") && isUploaded) {
             getClosureUploadedTenders();
             binding.rvProjectList.setAdapter(closurePhotoUploadAdapter);
-        }else if (dataType.equals("CLOSURE") && !isUploaded){
+        } else if (dataType.equals("CLOSURE") && !isUploaded) {
             getTendersForClosure();
             binding.rvProjectList.setAdapter(closurePhotoNotUploadAdapter);
         }
@@ -263,7 +263,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                 });
     }
 
-    private void getTendersForInspection(){
+    private void getTendersForInspection() {
         binding.animationView.setVisibility(View.VISIBLE);
         AndroidNetworking.post(BuildConfig.BASE_URL.concat("api/getTendersForInspection?userId=" + userId +
                 "&startDate=" + startdate + "&endDate=" + enddate))
@@ -289,7 +289,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                                         }
                                         initiationPhotoNotUploadAdapter.notifyDataSetChanged();
                                     }
-                                }else{
+                                } else {
                                     Toast.makeText(DashboardActivity.this, resObj.optString("message"), Toast.LENGTH_SHORT).show();
                                 }
                             } catch (JSONException e) {
@@ -306,7 +306,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                 });
     }
 
-    private void getTendersForClosure(){
+    private void getTendersForClosure() {
         binding.animationView.setVisibility(View.VISIBLE);
         AndroidNetworking.post(BuildConfig.BASE_URL.concat("api/getTendersForClosure?userId=" + userId +
                 "&startDate=" + startdate + "&endDate=" + enddate))
@@ -347,7 +347,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                 });
     }
 
-    private void getClosureUploadedTenders(){
+    private void getClosureUploadedTenders() {
         binding.animationView.setVisibility(View.VISIBLE);
         AndroidNetworking.post(BuildConfig.BASE_URL.concat("api/getClosureUploadedTenders?userId=" + userId +
                 "&startDate=" + startdate + "&endDate=" + enddate))
@@ -413,6 +413,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                                             Uploaded uploaded = Uploaded.parseUploaded(resArray.optJSONObject(i));
                                             uploadedData.add(uploaded);
                                         }
+                                        binding.rvProjectList.setAdapter(uploadedAdapter);
                                         uploadedAdapter.notifyDataSetChanged();
                                     }
                                 }
@@ -474,8 +475,6 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                 });
     }
 
-    private int mYear, mMonth, mDay;
-
     private void setToDateField() {
         final Calendar c = Calendar.getInstance();
         mYear = c.get(Calendar.YEAR);
@@ -528,6 +527,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
         }
         datePickerDialog.show();
     }
+
     private void setDafaultDateFormat() {
         Date c = Calendar.getInstance().getTime();
         System.out.println("Current time => " + c);
@@ -559,11 +559,11 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == 1 && resultCode == RESULT_OK && data != null) {
-            boolean isUploaded = data.getBooleanExtra("data",false);
-            if (isUploaded){
+            boolean isUploaded = data.getBooleanExtra("data", false);
+            if (isUploaded) {
                 getFundReleaseListForGeoTagging();
-            }else{
-                Toast.makeText(this, isUploaded+"", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, isUploaded + "", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -571,8 +571,8 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
     @Override
     public void notUploaded(NotUploaded item) {
         Intent uploadIntent = new Intent(DashboardActivity.this, ImageUploadActivity.class);
-        uploadIntent.putExtra("ID",item.fundReleaseId);
-        uploadIntent.putExtra("TYPE","FUND");
+        uploadIntent.putExtra("ID", item.fundReleaseId);
+        uploadIntent.putExtra("TYPE", "FUND");
         startActivity(uploadIntent);
     }
 
@@ -622,16 +622,16 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
     @Override
     public void notUploaded(InitiationData resultResponse) {
         Intent uploadIntent = new Intent(DashboardActivity.this, ImageUploadActivity.class);
-        uploadIntent.putExtra("ID",resultResponse.tenderId);
-        uploadIntent.putExtra("TYPE","INITITATION");
+        uploadIntent.putExtra("ID", resultResponse.tenderId);
+        uploadIntent.putExtra("TYPE", "INITITATION");
         startActivity(uploadIntent);
     }
 
     @Override
     public void onClosureUpload(int position) {
         Intent uploadIntent = new Intent(DashboardActivity.this, ImageUploadActivity.class);
-        uploadIntent.putExtra("ID",closureData.get(position).tenderId);
-        uploadIntent.putExtra("TYPE","CLOSURE");
+        uploadIntent.putExtra("ID", closureData.get(position).tenderId);
+        uploadIntent.putExtra("TYPE", "CLOSURE");
         startActivity(uploadIntent);
     }
 }

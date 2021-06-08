@@ -43,7 +43,7 @@ android {
             dimension "das"
 //            applicationIdSuffix ".jpr"
             buildConfigField("String","FLAVOUR_TYPE","\"JAJPUR\"")
-            buildConfigField("String", "BASE_URL", "\"http://209.97.136.18:8080/dist_auto_system/\"")
+            buildConfigField("String", "BASE_URL", "\"http://distdms-jajpur.com/\"")
         }
     }
     compileOptions {
