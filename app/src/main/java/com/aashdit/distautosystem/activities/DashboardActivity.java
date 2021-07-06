@@ -31,6 +31,7 @@ import com.aashdit.distautosystem.app.App;
 import com.aashdit.distautosystem.databinding.ActivityDashboardBinding;
 import com.aashdit.distautosystem.model.ClosureData;
 import com.aashdit.distautosystem.model.InitiationData;
+import com.aashdit.distautosystem.model.InitiationUploaded;
 import com.aashdit.distautosystem.model.NotUploaded;
 import com.aashdit.distautosystem.model.Uploaded;
 import com.aashdit.distautosystem.util.Constants;
@@ -68,6 +69,8 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
     private ArrayList<InitiationData> initiationUploadedData = new ArrayList<>();
     private ArrayList<ClosureData> closureData = new ArrayList<>();
     private ArrayList<ClosureData> closureUploadedData = new ArrayList<>();
+    private ArrayList<InitiationUploaded> initiationUpload = new ArrayList<>();
+    private ArrayList<InitiationUploaded> closureUpload = new ArrayList<>();
     private PhotoNotUploadAdapter notUploadedAdapter;
     private PhotoUploadAdapter uploadedAdapter;
     private InitiationPhotoNotUploadAdapter initiationPhotoNotUploadAdapter;
@@ -140,13 +143,13 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
             }
         });
 
-        initiationPhotoUploadAdapter = new InitiationPhotoUploadAdapter(this, initiationUploadedData);
+        initiationPhotoUploadAdapter = new InitiationPhotoUploadAdapter(this, initiationUpload);
 
         initiationPhotoNotUploadAdapter = new InitiationPhotoNotUploadAdapter(this, initiationData);
         initiationPhotoNotUploadAdapter.setNotUploadedListener(this);
         closurePhotoNotUploadAdapter = new ClosurePhotoNotUploadAdapter(this, closureData);
         closurePhotoNotUploadAdapter.setClosureUploadListener(this);
-        closurePhotoUploadAdapter = new ClosurePhotoUploadAdapter(this, closureUploadedData);
+        closurePhotoUploadAdapter = new ClosurePhotoUploadAdapter(this, closureUpload);
 
         notUploadedAdapter = new PhotoNotUploadAdapter(this, notUploadedData);
         notUploadedAdapter.setNotUploadedListener(this);
@@ -220,7 +223,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
 
     private void getInitialUploadedTenders() {
         binding.animationView.setVisibility(View.VISIBLE);
-        AndroidNetworking.post(BuildConfig.BASE_URL.concat("api/getInitialUploadedTenders?userId=" + userId +
+        AndroidNetworking.get(BuildConfig.BASE_URL.concat("api/getInitialUploadedTenders?userId=" + userId +
                 "&startDate=" + startdate + "&endDate=" + enddate))
                 .setTag("Login")
                 .setPriority(Priority.HIGH)
@@ -234,17 +237,24 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                             JSONObject resObj = null;
                             try {
                                 resObj = new JSONObject(response);
-                                String status = resObj.optString("status");
-                                if (status.equals("SUCCESS")) {
-                                    JSONArray resArray = resObj.optJSONArray("result");
+                                String status = resObj.optString("flag");
+                                if (status.equals("Success")) {
+                                    JSONArray resArray = resObj.optJSONArray("initiationUploadList");
                                     if (resArray != null && resArray.length() > 0) {
-                                        initiationUploadedData.clear();
+                                        initiationUpload.clear();
+//                                        initiationUploadedData.clear();
                                         for (int i = 0; i < resArray.length(); i++) {
-                                            InitiationData uploaded = InitiationData.parseInitiationData(resArray.optJSONObject(i));
-                                            initiationUploadedData.add(uploaded);
+                                            InitiationUploaded uploaded = InitiationUploaded.parseInitiationUploaded(resArray.optJSONObject(i));
+//                                            InitiationData uploaded = InitiationData.parseInitiationData(resArray.optJSONObject(i));
+                                            initiationUpload.add(uploaded);
+//                                            initiationUploadedData.add(uploaded);
                                         }
 //                                        uploadedAdapter.notifyDataSetChanged();
                                         binding.rvProjectList.setAdapter(initiationPhotoUploadAdapter);
+                                        initiationPhotoUploadAdapter.notifyDataSetChanged();
+                                    }else{
+                                        initiationUpload.clear();
+//                                        initiationUploadedData.clear();
                                         initiationPhotoUploadAdapter.notifyDataSetChanged();
                                     }
                                 }
@@ -349,7 +359,7 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
 
     private void getClosureUploadedTenders() {
         binding.animationView.setVisibility(View.VISIBLE);
-        AndroidNetworking.post(BuildConfig.BASE_URL.concat("api/getClosureUploadedTenders?userId=" + userId +
+        AndroidNetworking.get(BuildConfig.BASE_URL.concat("api/getClosureUploadedTenders?userId=" + userId +
                 "&startDate=" + startdate + "&endDate=" + enddate))
                 .setTag("Login")
                 .setPriority(Priority.HIGH)
@@ -362,15 +372,24 @@ public class DashboardActivity extends AppCompatActivity implements PhotoNotUplo
                             JSONObject resObj = null;
                             try {
                                 resObj = new JSONObject(response);
-                                String status = resObj.optString("status");
-                                if (status.equals("SUCCESS")) {
-                                    JSONArray resArray = resObj.optJSONArray("result");
+                                String status = resObj.optString("flag");
+                                if (status.equals("Success")) {
+                                    JSONArray resArray = resObj.optJSONArray("closureUploadList");
                                     if (resArray != null && resArray.length() > 0) {
-                                        closureUploadedData.clear();
+                                        closureUpload.clear();
+//                                        initiationUploadedData.clear();
                                         for (int i = 0; i < resArray.length(); i++) {
-                                            ClosureData notUploaded = ClosureData.parseInitiationData(resArray.optJSONObject(i));
-                                            closureUploadedData.add(notUploaded);
+                                            InitiationUploaded uploaded = InitiationUploaded.parseInitiationUploaded(resArray.optJSONObject(i));
+//                                            InitiationData uploaded = InitiationData.parseInitiationData(resArray.optJSONObject(i));
+                                            closureUpload.add(uploaded);
+//                                            initiationUploadedData.add(uploaded);
                                         }
+//                                        uploadedAdapter.notifyDataSetChanged();
+                                        binding.rvProjectList.setAdapter(closurePhotoUploadAdapter);
+                                        closurePhotoUploadAdapter.notifyDataSetChanged();
+                                    }else{
+                                        closureUpload.clear();
+//                                        initiationUploadedData.clear();
                                         closurePhotoUploadAdapter.notifyDataSetChanged();
                                     }
                                 }

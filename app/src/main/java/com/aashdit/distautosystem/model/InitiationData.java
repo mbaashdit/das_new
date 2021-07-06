@@ -4,6 +4,8 @@ import com.google.gson.annotations.SerializedName;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 public class InitiationData {
     @SerializedName("tenderId")
     public Long tenderId;
@@ -11,6 +13,10 @@ public class InitiationData {
     public String tenderCode;
     @SerializedName("agencyName")
     public String agencyName;
+    @SerializedName("projectName")
+    public String projectName;
+    public ArrayList<UploadedPhotoDetail> uploadedPhotoDetailArrayList;
+
     @SerializedName("aggrementDate")
     public String aggrementDate;
     @SerializedName("aggrementValue")
@@ -19,8 +25,6 @@ public class InitiationData {
     public String timeLine;
     @SerializedName("projectId")
     public String projectId;
-    @SerializedName("projectName")
-    public String projectName;
     @SerializedName("projectCode")
     public String projectCode;
     public String photoURL;
@@ -30,13 +34,13 @@ public class InitiationData {
 
     public static InitiationData parseInitiationData(JSONObject object){
         InitiationData initiationData = new InitiationData();
-        initiationData.tenderId = object.optLong("tenderId");
         initiationData.agencyName = object.optString("agencyName");
+        initiationData.projectName = object.optString("projectName");
+        initiationData.tenderId = object.optLong("tenderId");
         initiationData.tenderCode = object.optString("tenderCode");
         initiationData.aggrementDate = object.optString("aggrementDate");
         initiationData.aggrementValue = object.optString("aggrementValue");
         initiationData.timeLine = object.optString("timeLine");
-        initiationData.projectName = object.optString("projectName");
         initiationData.projectCode = object.optString("projectCode");
         initiationData.photoURL = object.optString("photoURL");
         initiationData.latitude = object.optString("latitude");
