@@ -39,11 +39,11 @@ android {
             buildConfigField("String","FLAVOUR_TYPE","\"DEMO\"")
             buildConfigField("String", "BASE_URL", "\"http://209.97.136.18:8080/dist_auto_system/\"")
         }
-        jajpur {
+        anugul {
             dimension "das"
 //            applicationIdSuffix ".jpr"
-            buildConfigField("String","FLAVOUR_TYPE","\"JAJPUR\"")
-            buildConfigField("String", "BASE_URL", "\"http://distdms-jajpur.com/\"")
+            buildConfigField("String","FLAVOUR_TYPE","\"ANUGUL\"")
+            buildConfigField("String", "BASE_URL", "\"http://117.247.252.92/das_angul/\"")
         }
         anugul {
             dimension "das"
